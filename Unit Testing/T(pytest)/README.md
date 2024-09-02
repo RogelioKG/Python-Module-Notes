@@ -40,12 +40,12 @@
   pytest
   ```
   > **選擇性參數**
-  > + `--markers`：查看所有已登記的 markers
-  > + `--fixtures`：查看所有已登記的 fixtures
-  > + `-h`：參數說明 (help)
-  > + `-v`：詳細結果 (verbose)
-  > + `-q`：簡潔結果 (quiet)
-  > + `-s`：允許 stdout / stderr 印出 (會打亂 pytest 測試結果輸出格式)
+  > + `--markers` : 查看所有已登記的 markers
+  > + `--fixtures` : 查看所有已登記的 fixtures
+  > + `-h` : 參數說明 (help)
+  > + `-v` : 詳細結果 (verbose)
+  > + `-q` : 簡潔結果 (quiet)
+  > + `-s` : 允許 stdout / stderr 印出 (會打亂 pytest 測試結果輸出格式)
 
 + **針對測試**
 
@@ -75,11 +75,11 @@
     ```
 
 + **CLI 測試結果**
-  + <span style="color: #719926;">`.`</span> / <span style="color: #719926;">`PASSED`</span>：代表一個通過的 test case
-  + <span style="color: #aead2a;">`s`</span> / <span style="color: #aead2a;">`SKIPPED`</span>：代表一個跳過的 test case
-  + <span style="color: #aead2a;">`x`</span> / <span style="color: #aead2a;">`XFAILED`</span>：代表一個已預期失敗 (等待修復) 的 test case
-  + <span style="color: #d3618b;">`F`</span> / <span style="color: #d3618b;">`FAILED`</span>：代表一個失敗的 test case
-  + `[80%]`：代表的是總完成進度 (百分比)
+  + <code><span style="color: #719926;">.</span></code> / <code><span style="color: #719926;">PASSED</span></code> : 代表一個通過的 test case
+  + <code><span style="color: #aead2a;">s</span></code> / <code><span style="color: #aead2a;">SKIPPED</span></code> : 代表一個跳過的 test case
+  + <code><span style="color: #aead2a;">x</span></code> / <code><span style="color: #aead2a;">XFAILED</span></code> : 代表一個已預期失敗 (等待修復) 的 test case
+  + <code><span style="color: #d3618b;">F</span></code> / <code><span style="color: #d3618b;">FAILED</span></code> : 代表一個失敗的 test case
+  + `[80%]` : 代表的是總完成進度 (百分比)
   
 
 
@@ -97,7 +97,7 @@
 ### `conftest.py`
 
 + **說明**
-  1. 其中的 fixture 可跨模組使用。有效範圍：當前目錄及其子目錄中的 test case 都可以使用，<mark>**無須 import**</mark>。
+  1. 其中的 fixture 可跨模組使用。有效範圍 : 當前目錄及其子目錄中的 test case 都可以使用，<mark>**無須 import**</mark>。
   2. 可在此自訂命令列的選擇性參數
 
 + **範例**
@@ -166,7 +166,7 @@
   ```
 
 + **資源初始化與釋放 `setup` / `teardown`**
-  > 缺點：無法接受引數
+  > 缺點 : 無法接受引數
   ```py
   def setup_module():
       print("setup_module")
@@ -216,15 +216,15 @@
 + **夾具 `fixture`**
 
   + 裝飾器參數
-    + [`scope`](https://www.cnblogs.com/yoyoketang/p/9762197.html)：作用域，預設為 "function"
-    + `name`：參數調用名稱，預設為函式名稱
-    + `autouse`：是否自動進行使用，預設為 False (根據 scope 而定，如果 scope="function"，那你不需傳遞引數就會自動調用)
-    + `params`：參數化測試，應給定 list[dict[str, Any]]
+    + [`scope`](https://www.cnblogs.com/yoyoketang/p/9762197.html) : 作用域，預設為 "function"
+    + `name` : 參數調用名稱，預設為函式名稱
+    + `autouse` : 是否自動進行使用，預設為 False (根據 scope 而定，如果 scope="function"，那你不需傳遞引數就會自動調用)
+    + `params` : 參數化測試，應給定 list[dict[str, Any]]
 
   + 必要應用場景
-    > Q：為何使用 fixture 而不使用 global variable？全域變數寫起來不是更簡單嗎？
+    > Q : 為何使用 fixture 而不使用 global variable？全域變數寫起來不是更簡單嗎？
 
-    > A：如下例，若 `test_data` 為全域變數，就會造成 `test_data` 通過第一個 test case 後反而無法通過之後的 test case。\
+    > A : 如下例，若 `test_data` 為全域變數，就會造成 `test_data` 通過第一個 test case 後反而無法通過之後的 test case。\
     > 很明顯，`test_data` 需要在每個 test case 執行前重新建立一遍。`fixture(scope="function")` 因而派上用場。
 
     ```py
@@ -245,11 +245,11 @@
         assert test_data_lol["a"] == 6
     ```
 
-+ **內建標記：條件跳過案例 `mark.skip` / `mark.skipif`**
++ **內建標記 : 條件跳過案例 `mark.skip` / `mark.skipif`**
 
   + 裝飾器參數
-    + `condition`：條件為真時跳過該 test case
-    + `reason`：跳過測試的原因 (在 verbose 模式會印出來)
+    + `condition` : 條件為真時跳過該 test case
+    + `reason` : 跳過測試的原因 (在 verbose 模式會印出來)
 
   + 範例
     ```py
@@ -262,10 +262,10 @@
         assert 1 + 1 == 4
     ```
 
-+ **內建標記：已預期失敗案例 `mark.xfail`**
++ **內建標記 : 已預期失敗案例 `mark.xfail`**
 
   + 裝飾器參數
-    + `reason`：跳過測試的原因 (在 verbose 模式會印出來)
+    + `reason` : 跳過測試的原因 (在 verbose 模式會印出來)
 
   + 範例
     ```py
@@ -274,15 +274,15 @@
         assert 2 * 3 == 7
     ```
 
-+ **內建標記：參數化測試 `mark.parametrize`**
++ **內建標記 : 參數化測試 `mark.parametrize`**
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
   |可搭配 fixture 使用，但它一定要放在函式簽名的最後面|
 
   + 裝飾器參數
-    + `argnames`：參數名稱
-    + `argvalues`：參數值 (可以有多組值)
-    + `ids`：每個 test case 的名稱
+    + `argnames` : 參數名稱
+    + `argvalues` : 參數值 (可以有多組值)
+    + `ids` : 每個 test case 的名稱
 
   + 簡單範例
     ```py
@@ -307,12 +307,12 @@
         # tests/test_something.py::test_add_with_ids[case: 2 + 2 = 4] PASSED
     ```
 
-+ **內建標記：使用夾具 `mark.usefixtures`**
++ **內建標記 : 使用夾具 `mark.usefixtures`**
     > 基本上功能與 fixture 傳遞引數寫法無異。\
     > 但通常用在欲使用 fixture 達成上下文管理，而非使用它的回傳值做用途的場合。\
-    > 上下文的進入順序：傳遞引數由左至右 -> usefixtures 由下至上
+    > 上下文的進入順序 : 傳遞引數由左至右 -> usefixtures 由下至上
 
-    + 上下文管理：fixture + yield
+    + 上下文管理 : fixture + yield
       ```py
       @pytest.fixture
       def func_1():
@@ -397,7 +397,7 @@
         assert result.birthday == test_user.birthday
     ```
 
-+ **自訂標記：`mark.*`**
++ **自訂標記 : `mark.*`**
 
   + 註冊自訂 marker
     ```ini
