@@ -11,13 +11,16 @@
 + 🔗 [**CSDN : pip 安裝常見坑**](https://blog.csdn.net/qq_41068877/article/details/127457367)
 + 🔗 [**Structuring Your Project**](https://docs.python-guide.org/writing/structure/)
 + 🔗 [**Choose an open source license**](https://choosealicense.com/)
-+ 🔗 [**【💊 Python的解憂錦囊】setuptools.errors.PackageDiscoveryError**](https://vocus.cc/article/64f1c81bfd897800012a054b)
-+ 🔗 [**【💊 Python的解憂錦囊】python -m build 打包時也能包含被引用的目錄**](https://vocus.cc/article/662998defd89780001968711)
++ 🔗 [**Dependency Resolution Made Simple**](https://borretti.me/article/dependency-resolution-made-simple)
++ 🔗 [**pip : Dependency Resolution**](https://pip.pypa.io/en/latest/topics/dependency-resolution/)
++ 🔗 [**【Python的解憂錦囊】setuptools.errors.PackageDiscoveryError**](https://vocus.cc/article/64f1c81bfd897800012a054b)
++ 🔗 [**【Python的解憂錦囊】python -m build 打包時也能包含被引用的目錄**](https://vocus.cc/article/662998defd89780001968711)
 + 🎞️ [**ArjanCodes: How to Build a Complete Python Package Step-by-Step**](https://youtu.be/5KEObONUkik)
 <!-- link -->
-[二進制發佈格式]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
-[toml_config]: https://packaging.pythonlang.cn/en/latest/guides/writing-pyproject-toml/
-[caching_and_troubleshooting]: https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html#caching-and-troubleshooting
+[binary-distribution-format]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
+[toml-config]: https://packaging.pythonlang.cn/en/latest/guides/writing-pyproject-toml/
+[caching-and-troubleshooting]: https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html#caching-and-troubleshooting
+[dependency-resolution]: https://pip.pypa.io/en/stable/topics/dependency-resolution/
 
 ### Preface
 
@@ -30,11 +33,11 @@
 
 + **egg**
 
-  > Python 的一種 <mark>[二進制發佈格式]</mark>，現已被 wheel 取代。
+  > Python 的一種 <mark>二進制發佈格式 ([binary distribution format][binary-distribution-format])</mark>，現已被 wheel 取代。
 
 + **wheel**
 
-  > Python 的一種 <mark>[二進制發佈格式]</mark>，旨在加速套件的安裝過程。\
+  > Python 的一種 <mark>二進制發佈格式 ([binary distribution format][binary-distribution-format])</mark>，旨在加速套件的安裝過程。\
   > 相較於源代碼發佈格式 (如 `.tar.gz`)，wheel <ins>不需在安裝時進行編譯</ins>，因而可以節省安裝時間。\
   > wheel 檔案的副檔名為 `.whl` (本質上是 `zip` 格式的壓縮檔)，是目前 Python 生態系中推薦的發佈格式。
 
@@ -85,7 +88,7 @@
 
 + `wheel`
   + <mark>第三方套件</mark>
-  + 用於產生 Python 套件的[二進制發佈格式] `.whl`
+  + 用於產生 Python 套件的二進制發佈格式 ([binary distribution format][binary-distribution-format]) `.whl`
 
 + `twine`
   + <mark>第三方套件</mark>
@@ -342,7 +345,7 @@ soundcraft/             # top-level package
     + `include=` : 包含哪些套件 (預設為 `('*',)`，即包含所有套件)
     + `exclude=` : 排除哪些套件 (預設為 `()`，即不排除任何套件)
 
-#### [`pyproject.toml`][toml_config]
+#### [`pyproject.toml`][toml-config]
 
 | 🚨 <span class="caution">CAUTION</span> |
 | :--- |
@@ -424,7 +427,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 
 | 🚨 <span class="caution">CAUTION</span> |
 | :--- |
-| 重新將套件構建為 distribution 時，構建工具可能會有一些[快取行為][caching_and_troubleshooting]。<br>如果發現構建結果有問題，先刪除 `dist/` 和 `build/` 和 `*.egg-info/` 目錄，再重新構建一次。 |
+| 重新將套件構建為 distribution 時，構建工具可能會有一些[快取行為][caching-and-troubleshooting]。<br>如果發現構建結果有問題，先刪除 `dist/` 和 `build/` 和 `*.egg-info/` 目錄，再重新構建一次。 |
 
 #### `setputools`
 
@@ -501,6 +504,31 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 
 #### `pip`
 
+  |📘 <span class="note">NOTE</span> : 相依性 dependency|
+  |:---|
+  | 安裝一個套件時，會自動安裝它的依賴套件 |
+  | 移除一個套件時，其依賴套件也會被移除，除非它被其他套件依賴<br>(🚨 <span class="caution">CAUTION</span> : `pip` 沒有自動移除依賴套件的功能，`poetry` 則有)|
+
+  |📘 <span class="note">NOTE</span> : 依賴解析 [dependency resolution][dependency-resolution]|
+  |:---|
+  | 套件依賴關係是一種有向無環圖 (DAG) |
+  | 每個套件對其依賴套件的版本有要求，不同版本之間對依賴套件的版本的要求可能不同 |
+  | `pip` 在安裝或更新套件時，會解析整個依賴圖，確保所有版本相容，<mark>同個套件不會有兩個版本</mark><br>(🚨 <span class="caution">CAUTION</span> : `npm` 就有可能出現同個套件多個版本？待確認...) |
+
+  |📘 <span class="note">NOTE</span> : 依賴衝突 dependency conflicts|
+  |:---|
+  | 當多個套件對同一依賴有不同版本要求且無交集，會導致衝突 |
+
+  |🚨 <span class="caution">CAUTION</span> : 安裝或升級會影響其他套件 |
+  |:---|
+  | `pip` 在安裝或升級一個套件的時候，是有可能影響到其他套件的，這不僅限於它的直接相依套件 |
+  | 範例：比如原先有個套件 B `==1.0`，它要求套件 A `>=1.5,<2.0`，現在它相依於套件 A `==1.5`，<br>今天新安裝了一個套件 C，它要求套件 A `>=2.0`，因此 pip 把套件 A 重裝為 `2.0`，這個套件 B 也就需要重裝。 |
+
+  |🚨 <span class="caution">CAUTION</span> : 安裝差異 |
+  |:---|
+  | **一次安裝** : 一次解析所有套件依賴，避免衝突 |
+  | **分批安裝** : 可能會因新套件需求，導致已安裝套件的版本變動 |
+
   + `install`
 
     + options
@@ -515,6 +543,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
         (套件下載到一半出錯，但目錄已創建，pip 會誤認為已安裝)
       + `--no-cache-dir`       : 強制從網路下載套件，而非從本地 cache 目錄抓取
       + `--pre`                : 安裝預發佈套件 (比如 alpha / beta 版本)
+      + `--no-deps`            : 不進行依賴解析 ([dependency resolution][dependency-resolution])
 
     + arguments
       + `name[extras_require]`
@@ -536,8 +565,15 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 + 🚨 `ERROR: Could not find a version that satisfies the requirement ...`
 
   翻譯蒟蒻 : 找不到對應的版本
+  
+  + Scenario 1. 下載某個指定版本的套件
 
-  + Scenario 1. 把自己寫的套件上傳到 TestPyPI 然後想載下來測試 (結果和你說找不到依賴套件的版本)
+    > Solution :\
+    > 可能是你 Python 版本太高，\
+    > 你可以去 PyPI 找一下這套件這版本的 python_requires，\
+    > 可能考慮 Python 要降版，或者套件要升版。
+
+  + Scenario 2. 把自己寫的套件上傳到 TestPyPI 然後想載下來測試 (結果和你說找不到依賴套件的版本)
     
     > Solution :\
     > 簡單來說，\
@@ -549,7 +585,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
     pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ package-name
     ```
 
-  + Scenario 2. 把自己寫的套件上傳到 PyPI 然後想載下來使用 (結果和你說找不到你寫的套件的版本)
+  + Scenario 3. 把自己寫的套件上傳到 PyPI 然後想載下來使用 (結果和你說找不到你寫的套件的版本)
 
     > Solution :\
     > 剛上傳，要等一下，再試一次就可以了。
