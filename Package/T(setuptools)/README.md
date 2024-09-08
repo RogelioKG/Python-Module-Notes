@@ -599,6 +599,14 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
   > 發生這種錯誤表示下載過程中檔案可能遭到損毀或被惡意篡改。\
   > 大部分情況是網路不好，所以下載檔案損毀了。
 
++ 🚨 `ERROR: To modify pip, please run the following command: python -m pip install ...`
+
+  翻譯蒟蒻 : 你現在要下載的這個套件，它的 dependency 之一就是 pip，而且還要求比你現在還高版的 pip
+
+  > Solution :\
+  > 使用 `python -m pip install ...` 這種寫法才有辦法自動更新 pip
+
+
 + 🚨 `WARNING: Retrying (...) after connection broken by 'ReadTimeoutError(...)'`
   
   翻譯蒟蒻 : 你斷網了
