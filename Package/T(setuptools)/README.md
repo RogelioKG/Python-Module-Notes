@@ -604,7 +604,8 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
   翻譯蒟蒻 : 你現在要下載的這個套件，它的 dependency 之一就是 pip，而且還要求比你現在還高版的 pip
 
   > Solution :\
-  > 使用 `python -m pip install ...` 這種寫法才有辦法自動更新 pip
+  > 你可能原本使用 `pip install ...`，\ 
+  > 但使用 `python -m pip install ...` 才有辦法自動更新 pip。
 
 
 + 🚨 `WARNING: Retrying (...) after connection broken by 'ReadTimeoutError(...)'`
