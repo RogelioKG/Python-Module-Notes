@@ -513,7 +513,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
   |:---|
   | 套件依賴關係是一種有向無環圖 (DAG) |
   | 每個套件對其依賴套件的版本有要求，不同版本之間對依賴套件的版本的要求可能不同 |
-  | `pip` 在安裝或更新套件時，會解析整個依賴圖，確保所有版本相容，<mark>同個套件不會有兩個版本</mark><br>(🚨 <span class="caution">CAUTION</span> : `npm` 就有可能出現同個套件多個版本？待確認...) |
+  | `pip` 在安裝或更新套件時，會解析整個依賴圖，確保所有版本相容，<mark>同個套件不會有兩個版本</mark><br>(🚨 <span class="caution">CAUTION</span> : Node.js 的 `npm` 比較特別，仰賴它自身 [Node.js Module Resolution Algorithm](https://hackmd.io/@RogelioKG/package_management_js#Nodejs-Module-Resolution-Algorithm) 的特性，它可以做到同個套件有多個版本，詳見[此處](https://hackmd.io/@RogelioKG/package_management_js#npm-v3)。 |
 
   |📘 <span class="note">NOTE</span> : 依賴衝突 dependency conflicts|
   |:---|
