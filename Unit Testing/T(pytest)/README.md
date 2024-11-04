@@ -19,7 +19,7 @@
 
 ### 注意
 
-|🔮 <span class="important">IMPORTANT</span>|
+|📘 <span class="note">NOTE</span>|
 |:---|
 |1. 放置在 `test` / `tests` 目錄內|
 |2. 模組名稱為 `test_*.py`|
