@@ -9,13 +9,13 @@
 
 ### 注意
 
-|☢️ <span class="warning">WARNING</span>|
+|🚨 <span class="caution">CAUTION</span>|
 |:---|
 |使用 for-loop 迭代的進度條是不會有 context management 的。|
 
 |📗 <span class="tip">TIP</span>|
 |:---|
-|在極大量 total 且 update 又非常少量的情況下，狀態不會實時 output (只會間斷性 output)。<br>未進行 output 的 update 時間為 600 ns；進行 output 的 update 時間為 400 us (666 倍)。<br>而 `disable=True` 能遏止 output。|
+|在極大量 total 且 update 又非常少量的情況下，<br />狀態不會實時 output (只會間斷性 output)。<br />未進行 output 的 update 耗時為 600 ns；<br />進行 output 的 update 耗時為 400 us (666 倍)。<br />而 `disable=True` 能遏止 output。<br />(如果不需要輸出的話，可以考慮關掉，雖然它通常不怎麼佔性能開銷)|
 
 ### 參數 (`tqdm`)
 
