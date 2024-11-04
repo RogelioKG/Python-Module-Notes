@@ -24,7 +24,7 @@
 
 ### Preface
 
-| 🚨 <span class="caution">CAUTION</span> |
+| ☢️ <span class="warning">WARNING</span> |
 | :--- |
 | 你也遇到奇怪的安裝錯誤了嗎？看看 [Common Error](#Common-Error) 能不能解決你遇到的問題！ |
 
@@ -150,9 +150,9 @@ soundcraft/             # top-level package
 
 | 📘 <span class="note">NOTE</span> |
 |:---|
-| 這些 config 用來設定 distribution 的 metadata |
+| 這些 config 是用來設定 distribution 的 metadata |
 
-| ☢️ <span class="warning">WARNING</span> |
+| 📗 <span class="tip">TIP</span> |
 | :--- |
 | 盡量使用 `pyproject.toml` 和 `setup.cfg` 這類的靜態 config，<br>少用 `setup.py` 這類的動態 config (除非必要)。 |
 
@@ -347,12 +347,12 @@ soundcraft/             # top-level package
 
 #### [`pyproject.toml`][toml-config]
 
-| 🚨 <span class="caution">CAUTION</span> |
+| ☢️ <span class="warning">WARNING</span> |
 | :--- |
 | 超級警告！！！如果你使用 setuptools 作為 build backend，<br>這裡搜索套件的匹配字串和 `find_packages()` 有小差異。|
 | <mark>最後使用 `*` 時，前面不要加 `.`</mark> |
 
-| 🚨 <span class="caution">CAUTION</span> |
+| ☢️ <span class="warning">WARNING</span> |
 | :--- |
 | 當你在套件中包含 `py.typed` 時，這表示該套件的 type hints 可以被靜態類型檢查工具 (mypy) 正確地識別和使用。 |
 | 如果套件沒有包含此檔案，而使用者嘗試進行 mypy 檢查，就會出現以下錯誤：<br>`error: Skipping analyzing "...": module is installed, but missing library stubs or py.typed marker  [import-untyped]` |
@@ -425,7 +425,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 
 ### Build
 
-| 🚨 <span class="caution">CAUTION</span> |
+| ☢️ <span class="warning">WARNING</span> |
 | :--- |
 | 重新將套件構建為 distribution 時，構建工具可能會有一些[快取行為][caching-and-troubleshooting]。<br>如果發現構建結果有問題，先刪除 `dist/` 和 `build/` 和 `*.egg-info/` 目錄，再重新構建一次。 |
 
@@ -562,7 +562,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 
 ### Common Error
 
-+ 🚨 `ERROR: Could not find a version that satisfies the requirement ...`
++ ☢️ `ERROR: Could not find a version that satisfies the requirement ...`
 
   翻譯蒟蒻 : 找不到對應的版本
   
@@ -590,7 +590,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
     > Solution :\
     > 剛上傳，要等一下，再試一次就可以了。
 
-+ 🚨 `ERROR: THESE PACKAGES DO NOT MATCH THE HASHES FROM THE REQUIREMENTS FILE ...`
++ ☢️ `ERROR: THESE PACKAGES DO NOT MATCH THE HASHES FROM THE REQUIREMENTS FILE ...`
 
   翻譯蒟蒻 : 下載後的檔案 hash 值與 PyPI 提供的 hash 值不一致
 
@@ -599,7 +599,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
   > 發生這種錯誤表示下載過程中檔案可能遭到損毀或被惡意篡改。\
   > 大部分情況是網路不好，所以下載檔案損毀了。
 
-+ 🚨 `ERROR: To modify pip, please run the following command: python -m pip install ...`
++ ☢️ `ERROR: To modify pip, please run the following command: python -m pip install ...`
 
   翻譯蒟蒻 : 你現在要下載的這個套件，它的 dependency 之一就是 pip，而且還要求比你現在還高版的 pip
 
@@ -608,7 +608,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
   > 但使用 `python -m pip install ...` 才有辦法自動更新 pip。
 
 
-+ 🚨 `WARNING: Retrying (...) after connection broken by 'ReadTimeoutError(...)'`
++ ☢️ `WARNING: Retrying (...) after connection broken by 'ReadTimeoutError(...)'`
   
   翻譯蒟蒻 : 你斷網了
 
