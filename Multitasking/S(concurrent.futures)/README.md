@@ -17,7 +17,7 @@
 | 🪄 使用 multi-threading 解決 I/O-bound tasks  |
 | 🪄 使用 multi-processing 解決 CPU-bound tasks |
 
-| ☢️ <span class="warning">WARNING</span>|
+| 🚨 <span class="caution">CAUTION</span>|
 | :------------------------------------- |
 | 啟動新進程大概會有幾百毫秒左右的 overhead<br>(若任務沒有繁重到能慢於這個時間，那就別開多進程) |
 
@@ -71,7 +71,7 @@
   | :-------------------------------------------------------------------------------------- |
   | 表示**任務的執行不會阻塞主進程**，任務派發完畢後，主進程就會繼續執行。 |
 
-  |☢️ <span class="warning">WARNING</span>|
+  |🚨 <span class="caution">CAUTION</span>|
   | :--- |
   | 任務一派發下去就會開始計算，不存在甚麼 lazy evaluation 的部分。<br>別把這裡的 `map` 和 Python 內建的 `map` 搞混了。 |
 
