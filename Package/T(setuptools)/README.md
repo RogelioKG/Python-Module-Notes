@@ -24,10 +24,13 @@
 
 ### Preface
 
-| ☢️ <span class="warning">WARNING</span> |
+| 📘 <span class="note">NOTE</span> |
 | :--- |
-| 你也遇到奇怪的安裝錯誤了嗎？看看 [Common Error](#Common-Error) 能不能解決你遇到的問題！ |
+| 你也遇到奇怪的安裝錯誤了嗎？<br />看看 [Common Error](#Common-Error) 能不能解決你遇到的問題！ |
 
+| 📘 <span class="note">NOTE</span> |
+| :--- |
+| 你也正在學 JavaScript npm / pnpm 嗎？<br />搭配這篇[⚡ JS 套件管理大師](https://hackmd.io/@RogelioKG/package_management_js) 一起服用，效果更好！ |
 
 ### Nouns
 
