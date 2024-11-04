@@ -25,7 +25,7 @@
 | 🪄 使用 multi-threading 解決 I/O-bound tasks  |
 | 🪄 使用 multi-processing 解決 CPU-bound tasks |
 
-| ☢️ <span class="warn">WARNING</span>|
+| 🚨 <span class="caution">CAUTION</span>|
 | :------------------------------------- |
 | 啟動新進程大概會有幾百毫秒左右的 overhead<br>(若任務沒有繁重到能慢於這個時間，那就別開多進程) |
 
@@ -217,7 +217,7 @@ if __name__ == '__main__':
   | :-------------------------------------------------------------------------------------- |
   | 由於派發出去的任務，計算結果尚未出爐，故而需要一種物件來代理這個未知的結果。這就是 Future 物件。<br>「老闆，我要一份蚵仔煎，待會來拿！」，這句話就體現 Future 物件的精髓所在。 |
 
-  |☢️ <span class="warning">WARNING</span>|
+  |🚨 <span class="caution">CAUTION</span>|
   | :--- |
   | 任務一派發下去就會開始計算，不存在甚麼 lazy evaluation 的部分。<br>別把這裡的 `map` 和 Python 內建的 `map` 搞混了。 |
 
