@@ -45,11 +45,11 @@ deactivate
 
 ### pyvenv.cfg
 ```
-home = C:\Users\t1260\AppData\Local\Programs\Python\Python311
+home = C:\Users\user\AppData\Local\Programs\Python\Python311
 include-system-site-packages = false
 version = 3.11.4
-executable = C:\Users\t1260\AppData\Local\Programs\Python\Python311\python.exe
-command = C:\Users\t1260\AppData\Local\Programs\Python\Python311\python.exe -m venv D:\ROGELIO-256-backup\Programs\Languages\Python\Modules\Virtual Environment\(venv)\.venv
+executable = C:\Users\user\AppData\Local\Programs\Python\Python311\python.exe
+command = C:\Users\user\AppData\Local\Programs\Python\Python311\python.exe -m venv D:\ROGELIO-256-backup\Programs\Languages\Python\Modules\Virtual Environment\(venv)\.venv
 ```
 
 1. `home`

@@ -58,21 +58,21 @@ deactivate
 
 ### pyvenv.cfg
 ```
-home = C:\Users\t1260\AppData\Local\Programs\Python\Python311
+home = C:\Users\user\AppData\Local\Programs\Python\Python311
 implementation = CPython
 version_info = 3.11.4.final.0
 virtualenv = 20.24.3
 include-system-site-packages = false
-base-prefix = C:\Users\t1260\AppData\Local\Programs\Python\Python311
-base-exec-prefix = C:\Users\t1260\AppData\Local\Programs\Python\Python311
-base-executable = C:\Users\t1260\AppData\Local\Programs\Python\Python311\python.exe
+base-prefix = C:\Users\user\AppData\Local\Programs\Python\Python311
+base-exec-prefix = C:\Users\user\AppData\Local\Programs\Python\Python311
+base-executable = C:\Users\user\AppData\Local\Programs\Python\Python311\python.exe
 ```
 
 1. `home`
    > **指定虛擬環境中使用的 Python 的目錄。**
 
 2. `implementation`
-   > **指定 Python 直譯器的實作。**
+   > **指定 Python Interpreter 的實作。**
 
 3. `version_info`
    > **指定虛擬環境使用的 Python 版本。**

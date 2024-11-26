@@ -47,7 +47,7 @@
 
 + `shell`
 
-  > 設定在此 shell 中使用 Python 版本
+  > 設定在此 shell 中使用 Python 版本\
   > 原理 : 設定臨時 envvar `PYENV_VERSION`
 
   ```bash
@@ -56,7 +56,7 @@
 
 + `local`
 
-  > 設定當前目錄使用 Python 版本
+  > 設定當前目錄使用 Python 版本\
   > 原理 : `./.python-version`
 
   ```bash
@@ -65,7 +65,7 @@
 
 + `global`
 
-  > 設定全域使用 Python 版本
+  > 設定全域使用 Python 版本\
   > 原理 : `~/.pyenv/pyenv-win/version`
 
   ```bash
