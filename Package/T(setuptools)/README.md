@@ -101,7 +101,7 @@
 
 
 
-### Note
+### Caution
 
 | 🚨 <span class="caution">CAUTION</span> |
 | :--- |
@@ -432,7 +432,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 | :--- |
 | 重新將套件構建為 distribution 時，構建工具可能會有一些[快取行為][caching-and-troubleshooting]。<br>如果發現構建結果有問題，先刪除 `dist/` 和 `build/` 和 `*.egg-info/` 目錄，再重新構建一次。 |
 
-#### `setputools`
+#### `setuptools`
 
   + 安裝套件到環境中
     
@@ -503,22 +503,22 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
 
 
 
-### Dowdload
+### Download
 
 #### `pip`
 
-  |📘 <span class="note">NOTE</span> : 相依性 dependency|
+  |🔮 <span class="important">IMPORTANT</span> : 相依性 dependency|
   |:---|
   | 安裝一個套件時，會自動安裝它的依賴套件 |
   | 移除一個套件時，其依賴套件也會被移除，除非它被其他套件依賴<br>(🚨 <span class="caution">CAUTION</span> : `pip` 沒有自動移除依賴套件的功能，`poetry` 則有)|
 
-  |📘 <span class="note">NOTE</span> : 依賴解析 [dependency resolution][dependency-resolution]|
+  |🔮 <span class="important">IMPORTANT</span> : 依賴解析 [dependency resolution][dependency-resolution]|
   |:---|
   | 套件依賴關係是一種有向無環圖 (DAG) |
   | 每個套件對其依賴套件的版本有要求，不同版本之間對依賴套件的版本的要求可能不同 |
   | `pip` 在安裝或更新套件時，會解析整個依賴圖，確保所有版本相容，<mark>同個套件不會有兩個版本</mark><br>(🚨 <span class="caution">CAUTION</span> : Node.js 的 `npm` 比較特別，仰賴它自身 [Node.js Module Resolution Algorithm](https://hackmd.io/@RogelioKG/package_management_js#Nodejs-Module-Resolution-Algorithm) 的特性，它可以做到同個套件有多個版本，詳見[此處](https://hackmd.io/@RogelioKG/package_management_js#npm-v3)。 |
 
-  |📘 <span class="note">NOTE</span> : 依賴衝突 dependency conflicts|
+  |🔮 <span class="important">IMPORTANT</span> : 依賴衝突 dependency conflicts|
   |:---|
   | 當多個套件對同一依賴有不同版本要求且無交集，會導致衝突 |
 
@@ -551,7 +551,7 @@ dev = ["build>=1.2.1", "twine>=5.1.1"]
     + arguments
       + `name[extras_require]`
 
-  + `cache`
+  + ##### `cache`
 
     | 📘 <span class="note">NOTE</span> |
     | :--- |
