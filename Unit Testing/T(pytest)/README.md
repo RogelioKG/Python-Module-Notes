@@ -2,7 +2,7 @@
 
 [![RogelioKG/pytest](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/pytest)
 
-### 參考
+## References
 + 🔗 [**Documentation - Pytest**](https://docs.pytest.org/en/7.4.x/)
 + 🔗 [**拾遺 - Python 測試入門 - 開始使用 PyTest**](https://blog.tzing.tw/posts/python-testing-pytest-08de903a)
 + 🔗 [**CSDN - pytest.ini**](https://blog.csdn.net/Moonlight_16/article/details/122706934)
@@ -13,11 +13,11 @@
 + 🎞️ [**ArjanCodes - How To Write Unit Tests For Existing Python Code // Part 1 of 2**](https://youtu.be/ULxMQ57engo?si=lhBSt6jt0NFBXTAS)
 + 🎞️ [**ArjanCodes - How To Write Unit Tests For Existing Python Code // Part 2 of 2**](https://youtu.be/NI5IGAim8XU?si=MxcKvp_wooG7H3oF)
 
-### 待深入主題
+## To-Do Lists
   + [ ] pytest.ini
   + [ ] TDD (測試驅動開發)
 
-### 注意
+## Note
 
 |📘 <span class="note">NOTE</span>|
 |:---|
@@ -32,7 +32,7 @@
 |4. TestClass 的第一個引數都要是 self，就如同在寫一般 class 一樣。|
 
 
-### 命令列
+## CLI
 
 + **直接測試**
 
@@ -83,7 +83,7 @@
   
 
 
-### `pytest.ini`
+## `pytest.ini`
 
 + **註冊自訂 marker**
   ```ini
@@ -94,13 +94,13 @@
 
 
 
-### `conftest.py`
+## `conftest.py`
 
 + **說明**
   1. 其中的 fixture 可跨模組使用。有效範圍 : 當前目錄及其子目錄中的 test case 都可以使用，<mark>**無須 import**</mark>。
   2. 可在此自訂命令列的選擇性參數
 
-+ **範例**
++ **example**
 
   + `conftest.py`
     ```py
@@ -114,7 +114,10 @@
     def pytest_addoption(parser: pytest.Parser):
         """"自訂一個命令列的選擇性參數"""
         parser.addoption(
-            "--env", default="test", choices=["dev", "test", "pre"], help="enviroment parameter")
+           "--env", 
+           default="test", 
+          choices=["dev", "test", "pre"], help="enviroment parameter"
+        )
     ```
 
   + `test_something.py`
@@ -132,17 +135,15 @@
         print("the current environment is:", pytestconfig.getoption("env"))
     ```
 
+## Tutorial
 
-
-### 使用指南
-
-+ **斷言驗證**
+### 斷言驗證
   ```py
   def test_demo():
       assert 1 + 1 == 2
   ```
 
-+ **錯誤驗證 `raises`**
+### 錯誤驗證 `raises`
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
   |每個 with 述句只能驗證一個錯誤|
@@ -165,8 +166,10 @@
       print(exc.typename) # IndexError
   ```
 
-+ **資源初始化與釋放 `setup` / `teardown`**
-  > 缺點 : 無法接受引數
+### 資源初始化與釋放 `setup` / `teardown`
+  <mark>context management</mark>\
+  缺點 : 無法接受引數
+
   ```py
   def setup_module():
       print("setup_module")
@@ -198,8 +201,9 @@
   # teardown_module
   ```
 
-+ **輸入模擬 `MonkeyPatch`**
-  > 猴子補丁
+### 輸入模擬 `MonkeyPatch`
+  猴子補丁
+
   ```py
   def test_card(monkeypatch: pytest.MonkeyPatch) -> None:
       # 信用卡號 / 到期月份 / 到期年分
@@ -213,24 +217,31 @@
       assert card.expiry_year == 2024
   ```
 
-+ **夾具 `fixture`**
+### 夾具 `fixture`
 
-  + 裝飾器參數
-    + [`scope`](https://www.cnblogs.com/yoyoketang/p/9762197.html) : 作用域，預設為 "function"
-    + `name` : 參數調用名稱，預設為函式名稱
-    + `autouse` : 是否自動進行使用，預設為 False (根據 scope 而定，如果 scope="function"，那你不需傳遞引數就會自動調用)
+  + **decorator kwargs**
+    + [<mark>`scope`</mark>](https://www.cnblogs.com/yoyoketang/p/9762197.html) : 變數生命週期的作用域，預設為 "function"\
+      (在每個 test case 裡都會重新 create 一遍)
+    + `name` : 變數調用名稱，預設就是函式的名稱
+    + `autouse` : 是否[在每個 test case 中自動使用](#參數：autouse)，預設為 False\
+      (根據 scope 而定，如果 scope="function"，那不需傳遞引數就會自動調用)
     + `params` : 參數化測試，應給定 list[dict[str, Any]]
 
-  + 必要應用場景
-    > Q : 為何使用 fixture 而不使用 global variable？全域變數寫起來不是更簡單嗎？
+  + **必要性**
+    > Q : 為何使用 fixture，而不使用 global variable 就好？\
+    > global variable 寫起來不是更簡單嗎？
 
-    > A : 如下例，若 `test_data` 為全域變數，就會造成 `test_data` 通過第一個 test case 後反而無法通過之後的 test case。\
-    > 很明顯，`test_data` 需要在每個 test case 執行前重新建立一遍。`fixture(scope="function")` 因而派上用場。
+    > A : 請看下例，如果 fixture `test_data` 變成一般的 global variable，\
+    > 就會造成 `test_data` 通過第一個 test case 後，反而無法通過之後的 test case。\
+    > 很明顯，`test_data` 需要在每個 test case 執行前重新 create 一遍。\
+    > `fixture(scope="function")` 因而派上用場。
 
     ```py
+    # 功能
     def update_a(data: dict[str, int], n: int) -> None:
         data["a"] += n
 
+    # 測試
     @pytest.fixture(scope="function", name="test_data_lol")
     def test_data() -> dict[str, int]:
         data = {"a": 1, "b": 2, "c": 3}
@@ -245,109 +256,123 @@
         assert test_data_lol["a"] == 6
     ```
 
-+ **內建標記 : 條件跳過案例 `mark.skip` / `mark.skipif`**
+### 內建標記 : 條件跳過案例 `mark.skip` / `mark.skipif`
 
-  + 裝飾器參數
+  + **decorator kwargs**
     + `condition` : 條件為真時跳過該 test case
     + `reason` : 跳過測試的原因 (在 verbose 模式會印出來)
 
-  + 範例
+  + **example**
     ```py
-    @pytest.mark.skip(reason="測試案例跳過範例")
+    # 測試
+    @pytest.mark.skip(reason="沒有理由但我就想跳過")
     def test_skip_test_case():
         assert 1 + 1 == 3
 
-    @pytest.mark.skipif(condition=sys.platform == "win32", reason="測試跳過指定條件範例")
+    @pytest.mark.skipif(condition=sys.platform == "win32", reason="因為是萬惡 Windows")
     def test_skip_test_case_by_condition():
         assert 1 + 1 == 4
     ```
 
-+ **內建標記 : 已預期失敗案例 `mark.xfail`**
+### 內建標記 : 已預期失敗案例 `mark.xfail`
 
-  + 裝飾器參數
+  + **decorator kwargs**
     + `reason` : 跳過測試的原因 (在 verbose 模式會印出來)
 
-  + 範例
+  + **example**
     ```py
     @pytest.mark.xfail(reason="該測試案例目前會失敗，等待 BUG 修復")
     def test_example_xfail():
         assert 2 * 3 == 7
     ```
 
-+ **內建標記 : 參數化測試 `mark.parametrize`**
+### 內建標記 : 參數化測試 `mark.parametrize`
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
-  |可搭配 fixture 使用，但它一定要放在函式簽名的最後面|
+  |可搭配 fixture 使用，但它一定要裝飾在最靠近函式的地方|
 
-  + 裝飾器參數
+  + **decorator kwargs**
     + `argnames` : 參數名稱
     + `argvalues` : 參數值 (可以有多組值)
     + `ids` : 每個 test case 的名稱
 
-  + 簡單範例
+  + **example**
     ```py
     # 算兩個 test case
-    @pytest.mark.parametrize(argnames="num1, num2, result", argvalues=[(1, 1, 2), (2, 2, 4)])
+    @pytest.mark.parametrize(
+        argnames="num1, num2, result", 
+        argvalues=[(1, 1, 2), (2, 2, 4)]
+    )
     def test_add(num1: int, num2: int, result: int):
         assert num1 + num2 == result
         # tests/test_something.py::test_add[1-1-2] PASSED
         # tests/test_something.py::test_add[2-2-4] PASSED
     ```
-  + ids
+  + **ids**
     ```py
     test_args = [(1, 1, 2), (2, 2, 4)]
 
-    ids = [f"case: {test_arg[0]} + {test_arg[1]} = {test_arg[2]}" for test_arg in test_args]
+    ids = [f"case: {test_arg[0]} + {test_arg[1]} = {test_arg[2]}" 
+           for test_arg in test_args]
 
     # 算兩個 test case
-    @pytest.mark.parametrize(argnames="num1, num2, result", argvalues=test_args, ids=ids)
+    @pytest.mark.parametrize(
+        argnames="num1, num2, result", 
+        argvalues=test_args, ids=ids
+    )
     def test_add_with_ids(num1: int, num2: int, result: int):
         assert num1 + num2 == result
         # tests/test_something.py::test_add_with_ids[case: 1 + 1 = 2] PASSED 
         # tests/test_something.py::test_add_with_ids[case: 2 + 2 = 4] PASSED
     ```
 
-+ **內建標記 : 使用夾具 `mark.usefixtures`**
-    > 基本上功能與 fixture 傳遞引數寫法無異。\
-    > 但通常用在欲使用 fixture 達成上下文管理，而非使用它的回傳值做用途的場合。\
-    > 上下文的進入順序 : 傳遞引數由左至右 -> usefixtures 由下至上
+### 內建標記 : 使用夾具 `mark.usefixtures`
 
-    + 上下文管理 : fixture + yield
-      ```py
-      @pytest.fixture
-      def func_1():
-          print("setup 1")
-          yield
-          print("teardown 1")
+  基本上功能與 fixture 傳遞引數寫法無異。\
+  但通常用在欲使用 fixture 達成 <mark>context management</mark> 的場合，\
+  而非使用它的回傳值做用途的場合。\
+  上下文的進入順序 : 傳遞引數由左至右 -> usefixtures 由下至上
 
-      @pytest.fixture
-      def func_2():
-          print("setup 2")
-          yield
-          print("teardown 2")
+  + **context management : <mark>fixture + yield</mark>**
 
-      @pytest.fixture
-      def func_3():
-          print("setup 3")
-          yield
-          print("teardown 3")
+    ```py
+    @pytest.fixture
+    def func_1():
+        print("setup 1")
+        yield
+        print("teardown 1")
 
-      # 注意上下文順序
-      @pytest.mark.usefixtures("func_1", "func_2", "func_3")
-      def test_func():
-          print("Hello!")
-          # setup 1
-          # setup 2
-          # setup 3
-          # Hello!
-          # .teardown 3
-          # teardown 2
-          # teardown 1
-      ```
+    @pytest.fixture
+    def func_2():
+        print("setup 2")
+        yield
+        print("teardown 2")
 
-  + 可傳遞引數的 setup / teardown
-    > 不像 setup / teardown 函數無法傳遞引數，使用 fixture 做上下文管理的好處是可以傳遞引數。\
-    > 如下範例，傳遞的引數為 test_session
+    @pytest.fixture
+    def func_3():
+        print("setup 3")
+        yield
+        print("teardown 3")
+
+    # 注意上下文順序
+    @pytest.mark.usefixtures("func_1", "func_2", "func_3")
+    def test_func():
+        print("Hello!")
+        # setup 1
+        # setup 2
+        # setup 3
+        # Hello!
+        # .teardown 3
+        # teardown 2
+        # teardown 1
+    ```
+
+  + **為什麼不用 setup / teardown 做 context management 就好**
+
+    不像 setup / teardown 函數無法傳遞引數，\
+    使用 fixture 做 context management 的好處是可以傳遞引數。\
+    如下，傳遞的引數為 `test_session`
+    
     ```py
     @pytest.fixture(scope="session")
     def test_session() -> Session:
@@ -378,35 +403,38 @@
         assert result.birthday == test_user.birthday
     ```
 
-  + autouse
-    > scope="function" 的 autouse 會讓模組內的 test case 自動使用 clear_tables。\
-    > 如果有非常多的 test cases，就不須每個都套上裝飾器。
-    ```py
-    @pytest.fixture(scope="function", autouse=True)
-    def clear_tables(test_session: Session) -> None:
-        yield
-        for _, table in Base.metadata.tables.items():
-            test_session.query(table).delete()
-        test_session.commit()
+### 參數：autouse
 
-    # 這邊就不需再使用 fixture 了
-    def test_create_user(test_user: User, test_session: Session):
-        result = user_services.create_user(test_user, test_session)
-        assert result.id is not None
-        assert result.username == test_user.username
-        assert result.birthday == test_user.birthday
-    ```
+  scope="function" 的 autouse 會讓模組內的 test case 自動使用 clear_tables。\
+  如果有非常多的 test cases，就不須每個都套上 decorator。
 
-+ **自訂標記 : `mark.*`**
+  ```py
+  # 每次 test case 後自動清除資料表
+  @pytest.fixture(scope="function", autouse=True)
+  def clear_tables(test_session: Session) -> None:
+      yield
+      for _, table in Base.metadata.tables.items():
+          test_session.query(table).delete()
+      test_session.commit()
 
-  + 註冊自訂 marker
+  # 這邊就不需再使用 fixture 了
+  def test_create_user(test_user: User, test_session: Session):
+      result = user_services.create_user(test_user, test_session)
+      assert result.id is not None
+      assert result.username == test_user.username
+      assert result.birthday == test_user.birthday
+  ```
+
+### 自訂標記 : `mark.?`
+
+  + **註冊自訂 marker**
     ```ini
     # in ./pytest.ini
     [pytest]
     markers =
         database: mark test as database. ; 註冊並說明這個 marker 的用途
     ```
-  + 標記自訂 marker
+  + **標記自訂 marker**
     ```py
     # in ./tests/test_something.py
     @pytest.mark.database
@@ -431,7 +459,7 @@
             pass
     ```
 
-  + 只選擇有 mark.database 的 test case 進行測試
+  + **只選擇有 mark.database 的 test case 進行測試**
     ```bash
     pytest -m database
     ```
