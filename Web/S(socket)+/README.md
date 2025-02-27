@@ -2,7 +2,7 @@
 
 ### References
 + 🔗 [**Socket Programming in Python (Guide)**](https://realpython.com/python-sockets/)
-+ 🔗 [](https://ithelp.ithome.com.tw/m/articles/10217260)
++ 🔗 [**Socket Programming (HackMD)**](https://hackmd.io/@ORCk2GtfSBKroDhAtAJWpw/HktRLXXGkg)
 
 ### Function
 | 函式                                           | 說明                                             |
@@ -158,6 +158,7 @@
   > 應用層與傳輸層之間的接口，它讓應用程式能夠直接使用傳輸層協議（如 TCP 或 UDP）來傳輸數據。
 
 + **注意**
+  + Socket address = IP address + port number，其唯一定義一個 process 
   + 每個 host 都有 port number 0 ~ 65535 可以使用
   + port number 0 ~ 1023 是 well-known port number，留給使用 well-known protocol 的 server process。
   + 一個 process 可有多個 Socket
