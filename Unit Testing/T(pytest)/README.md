@@ -203,7 +203,19 @@
 
 ### 輸入模擬 `MonkeyPatch`
   猴子補丁
-
+  ```py
+  class CreditCard:
+      def __init__(self, number: str, expiry_month: int, expiry_year: int):
+          self.number = number
+          self.expiry_month = expiry_month
+          self.expiry_year = expiry_year
+      @classmethod
+      def read_card_info(cls) -> "CreditCard":
+          number = input("Card Number: ")
+          expiry_month = input("Expiry Month: ")
+          expiry_year = input("Expiry Year: ")
+          return cls(number, int(expiry_month), int(expiry_year))
+  ```
   ```py
   def test_card(monkeypatch: pytest.MonkeyPatch) -> None:
       # 信用卡號 / 到期月份 / 到期年分
