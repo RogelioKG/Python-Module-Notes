@@ -167,67 +167,38 @@
   ```
 
 ### 資源初始化與釋放 `setup` / `teardown`
-  <mark>context management</mark>\
-  缺點 : 無法接受引數
+  + <mark>context management</mark>\
+    缺點 : 無法接受引數
+    ```py
+    def setup_module():
+        print("setup_module")
 
-  ```py
-  def setup_module():
-      print("setup_module")
-
-  def teardown_module():
-      print("teardown_module")
-
-
-  def setup_function():
-      print("setup_function")
+    def teardown_module():
+        print("teardown_module")
 
 
-  def teardown_function():
-      print("teardown_function")
+    def setup_function():
+        print("setup_function")
 
 
-  def test_demo():
-      assert 1 + 1 == 2
+    def teardown_function():
+        print("teardown_function")
 
 
-  def test_demo_2():
-      assert 2 + 2 == 4
+    def test_demo():
+        assert 1 + 1 == 2
 
-  # setup_module
-  # setup_function
-  # .teardown_function
-  # setup_function
-  # .teardown_function
-  # teardown_module
-  ```
 
-### 輸入模擬 `MonkeyPatch`
-  猴子補丁
-  ```py
-  class CreditCard:
-      def __init__(self, number: str, expiry_month: int, expiry_year: int):
-          self.number = number
-          self.expiry_month = expiry_month
-          self.expiry_year = expiry_year
-      @classmethod
-      def read_card_info(cls) -> "CreditCard":
-          number = input("Card Number: ")
-          expiry_month = input("Expiry Month: ")
-          expiry_year = input("Expiry Year: ")
-          return cls(number, int(expiry_month), int(expiry_year))
-  ```
-  ```py
-  def test_card(monkeypatch: pytest.MonkeyPatch) -> None:
-      # 信用卡號 / 到期月份 / 到期年分
-      inputs = ["1249190007575069", "12", "2024"]
-      # 暫時魔改 builtins.input 函數
-      monkeypatch.setattr("builtins.input", lambda _: inputs.pop(0))
-      # read_card_info 會使用到 builtins.input 函數 (只要呼叫，我們就把假輸入餵給它)
-      card = CreditCard.read_card_info()
-      assert card.number == "1249190007575069"
-      assert card.expiry_month == 12
-      assert card.expiry_year == 2024
-  ```
+    def test_demo_2():
+        assert 2 + 2 == 4
+
+    # setup_module
+    # setup_function
+    # .teardown_function
+    # setup_function
+    # .teardown_function
+    # teardown_module
+    ```
 
 ### 夾具 `fixture`
 
@@ -235,7 +206,7 @@
     + [<mark>`scope`</mark>](https://www.cnblogs.com/yoyoketang/p/9762197.html) : 變數生命週期的作用域，預設為 "function"\
       (在每個 test case 裡都會重新 create 一遍)
     + `name` : 變數調用名稱，預設就是函式的名稱
-    + `autouse` : 是否[在每個 test case 中自動使用](#參數：autouse)，預設為 False\
+    + `autouse` : 是否在每個 test case 中自動使用，預設為 False\
       (根據 scope 而定，如果 scope="function"，那不需傳遞引數就會自動調用)
     + `params` : 參數化測試，應給定 list[dict[str, Any]]
 
@@ -267,6 +238,184 @@
         update_a(test_data_lol, 5)
         assert test_data_lol["a"] == 6
     ```
+
++ 參數 `autouse`
+
+  scope="function" 的 autouse 會讓模組內的 test case 自動使用 clear_tables。\
+  如果有非常多的 test cases，就不須每個都套上 decorator。
+
+  ```py
+  # 每次 test case 後自動清除資料表
+  @pytest.fixture(scope="function", autouse=True)
+  def clear_tables(test_session: Session) -> None:
+      yield
+      for _, table in Base.metadata.tables.items():
+          test_session.query(table).delete()
+      test_session.commit()
+
+  # 這邊就不需再使用 fixture 了
+  def test_create_user(test_user: User, test_session: Session):
+      result = user_services.create_user(test_user, test_session)
+      assert result.id is not None
+      assert result.username == test_user.username
+      assert result.birthday == test_user.birthday
+  ```
+
+### 內建夾具 : 猴子補丁 `monkeypatch`
+  + 輸入 mock
+    ```py
+    import pytest
+
+    class CreditCard:
+        def __init__(self, number: str, expiry_month: int, expiry_year: int):
+            self.number = number
+            self.expiry_month = expiry_month
+            self.expiry_year = expiry_year
+        @classmethod
+        def read_card_info(cls) -> "CreditCard":
+            number = input("Card Number: ")
+            expiry_month = input("Expiry Month: ")
+            expiry_year = input("Expiry Year: ")
+            return cls(number, int(expiry_month), int(expiry_year))
+
+    def test_credit_card(monkeypatch: pytest.MonkeyPatch) -> None:
+        # 信用卡號 / 到期月份 / 到期年分
+        inputs = ["1249190007575069", "12", "2024"]
+        # 暫時魔改 builtins.input 函數
+        monkeypatch.setattr("builtins.input", lambda _: inputs.pop(0))
+        # read_card_info 會使用到 builtins.input 函數 (只要呼叫，我們就把假輸入餵給它)
+        card = CreditCard.read_card_info()
+        assert card.number == "1249190007575069"
+        assert card.expiry_month == 12
+        assert card.expiry_year == 2024
+    ```
+  + 覆蓋環境變數
+    ```py
+    import os
+    import pytest
+
+    def get_secret():
+        return os.getenv("SECRET_KEY", "default")
+
+    def test_get_secret(monkeypatch: pytest.MonkeyPatch):
+        monkeypatch.setenv("SECRET_KEY", "super-secret")
+        assert get_secret() == "super-secret"
+    ```
+
+
+### 內建夾具 : 擷取輸出流 `capsys`
+
++ 輸出流
+  ```py
+  import pytest
+
+  def greet():
+      print("Hello, pytest!")
+
+  def test_greet(capsys: pytest.CaptureFixture):
+      greet()
+      captured = capsys.readouterr()
+      assert captured.out == "Hello, pytest!\n"
+      greet()
+      greet()
+      captured = capsys.readouterr()
+      assert captured.out == "Hello, pytest!\nHello, pytest!\n"
+  ```
+
++ 錯誤流
+  ```py
+  import pytest
+  import sys
+
+  def error():
+      print("Error, pytest!", file=sys.stderr)
+
+  def test_error(capsys: pytest.CaptureFixture):
+      error()
+      captured = capsys.readouterr()
+      assert captured.err == "Error, pytest!\n"
+  ```
+
+### 內建夾具 : 擷取日誌 `caplog`
+
+  ```py
+  import logging
+  import pytest
+
+  def log_warning():
+      logging.warning("This is a warning!")
+
+  def test_log_warning(caplog: pytest.LogCaptureFixture):
+      with caplog.at_level(logging.WARNING):
+          log_warning()
+      assert "This is a warning!" in caplog.text
+
+      caplog.clear()
+
+      with caplog.at_level(logging.WARNING):
+          log_warning()
+      assert ('root', 30, 'This is a warning!') in caplog.record_tuples
+  ```
+
+### 內建夾具 : 暫時路徑 `tmp_path`
+  |📘 <span class="note">NOTE</span>|
+  |:---|
+  |在 Windows 中，這些暫時目錄或檔案會放在 `%APPDATA%/Local/Temp/pytest-of-user` 中|
+
+  ```py
+  from pathlib import Path
+  import pytest
+
+  class FileHandler:
+      def read_file(self, filename):
+          with open(filename, 'r') as file:
+              return file.read()
+
+      def write_file(self, filename, content):
+          with open(filename, 'w') as file:
+              file.write(content)
+
+  def test_file_handling(tmp_path: Path):
+      # 
+      sub_dir = tmp_path / "tmp_dir"
+      sub_dir.mkdir()
+
+      file1 = sub_dir / "file1.txt"
+      file2 = sub_dir / "file2.txt"
+
+      handler = FileHandler()
+      handler.write_file(file1, "Content of file 1")
+      handler.write_file(file2, "Content of file 2")
+
+      assert file1.exists()
+      assert file2.exists()
+
+      assert file1.read_text() == "Content of file 1"
+      assert file2.read_text() == "Content of file 2"
+  ```
+
+### 內建夾具 : 快取 `cache`
+  ```py
+  import time
+  import pytest
+
+  def expensive_calculation():
+      time.sleep(2)  # 模擬一個耗時的計算
+      return 42
+
+  def test_expensive_calculation(cache: pytest.Cache):
+      # 嘗試讀取快取資料
+      result = cache.get("expensive_result")
+      
+      # 如果快取資料不存在，進行計算並快取結果
+      if result is None:
+          result = expensive_calculation()
+          cache.set("expensive_result", result)
+
+      assert result == 42
+  ```
+
+
 
 ### 內建標記 : 條件跳過案例 `mark.skip` / `mark.skipif`
 
@@ -414,28 +563,6 @@
         assert result.username == test_user.username
         assert result.birthday == test_user.birthday
     ```
-
-### 參數：autouse
-
-  scope="function" 的 autouse 會讓模組內的 test case 自動使用 clear_tables。\
-  如果有非常多的 test cases，就不須每個都套上 decorator。
-
-  ```py
-  # 每次 test case 後自動清除資料表
-  @pytest.fixture(scope="function", autouse=True)
-  def clear_tables(test_session: Session) -> None:
-      yield
-      for _, table in Base.metadata.tables.items():
-          test_session.query(table).delete()
-      test_session.commit()
-
-  # 這邊就不需再使用 fixture 了
-  def test_create_user(test_user: User, test_session: Session):
-      result = user_services.create_user(test_user, test_session)
-      assert result.id is not None
-      assert result.username == test_user.username
-      assert result.birthday == test_user.birthday
-  ```
 
 ### 自訂標記 : `mark.?`
 
