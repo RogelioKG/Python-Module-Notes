@@ -459,7 +459,7 @@ markers =
       assert result == 42
   ```
 
-### 標記 : `mark.?`
+### 標記 `mark.?`
 
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
