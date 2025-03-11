@@ -9,6 +9,7 @@
 
 ## References
 + 📑 [**Documentation - uv**](https://docs.astral.sh/uv/)
++ 🔗 [**使用 uv 管理 Python 環境**](https://dev.to/codemee/shi-yong-uv-guan-li-python-huan-jing-53hg)
 + 🎬 [**ArjanCodes - UV for Python… (Almost) All Batteries Included**](https://youtu.be/qh98qOND6MI)
 
 ## Installation
