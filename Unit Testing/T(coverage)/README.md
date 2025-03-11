@@ -1,7 +1,5 @@
 # coverage
 
-[![RogelioKG/coverage](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/coverage)
-
 ### 參考
 + 🔗 [**利用 Coverage 計算 Python 程式碼的涵蓋率**](https://kkboxsqa.wordpress.com/2014/05/11/%E5%88%A9%E7%94%A8-coverage-%E8%A8%88%E7%AE%97-python-%E7%A8%8B%E5%BC%8F%E7%A2%BC%E7%9A%84%E6%B6%B5%E8%93%8B%E7%8E%87/)
 

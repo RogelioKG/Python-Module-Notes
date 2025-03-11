@@ -34,20 +34,23 @@
 
 ## CLI
 
-+ **直接測試**
-
++ **選項**
   ```bash
   pytest
   ```
-  > **選擇性參數**
-  > + `--markers` : 查看所有已登記的 markers
-  > + `--fixtures` : 查看所有已登記的 fixtures
-  > + `-h` : 參數說明 (help)
-  > + `-v` : 詳細結果 (verbose)
-  > + `-q` : 簡潔結果 (quiet)
-  > + `-s` : 允許 stdout / stderr 印出 (會打亂 pytest 測試結果輸出格式)
+  + `--markers` : 查看所有已註冊的 markers
+  + `--fixtures` : 查看所有已註冊的 fixtures
+  + `-h` : 參數說明 (help)
+  + `-v` : 詳細結果 (verbose)
+  + `-q` : 簡潔結果 (quiet)
+  + `-s` : 允許 stdout / stderr 印出 (會打亂 pytest 測試結果輸出格式)
 
-+ **針對測試**
++ **測試範圍**
+
+  + 全部測試
+    ```bash
+    pytest
+    ```
 
   + 針對某個子目錄進行測試
     ```bash
@@ -82,19 +85,63 @@
   + `[80%]` : 代表的是總完成進度 (百分比)
   
 
+## Config
 
-## `pytest.ini`
+### `pytest.ini`
 
-+ **註冊自訂 marker**
-  ```ini
-  [pytest]
-  markers =
-      database: mark test as database. ; 註冊並說明這個 marker 的用途
-  ```
+```ini
+[pytest]
+# 指定測試時的最小 pytest 版本要求
+minversion = 6.0
 
+# 設定 pytest 預設的測試參數
+# -q: 安靜模式，減少輸出資訊
+# --disable-warnings: 禁用警告顯示
+addopts = -q --disable-warnings
 
+# 指定測試的搜尋路徑，預設 pytest 會搜尋 tests/ 目錄
+# 這樣可以避免 pytest 搜索到不相關的測試文件
+norecursedirs = .* build dist CVS _darcs
 
-## `conftest.py`
+testpaths = tests
+
+# 指定 pytest 應該辨識的測試檔案名稱模式
+# 預設是 test_*.py 和 *_test.py
+python_files = test_*.py *_test.py
+
+# 指定 pytest 應該辨識的測試類別名稱模式
+# 這樣只會執行以 "Test" 開頭的類別
+python_classes = Test*
+
+# 指定 pytest 應該辨識的測試函數名稱模式
+# 這樣只會執行以 "test_" 開頭的函數
+python_functions = test_*
+
+# 設定測試輸出的格式 (例如 junit, html, xml 等)
+# 這裡設定為 JUnit 格式輸出到 reports/pytest_report.xml
+junit_family = xunit1
+junit_logging = all
+junit_suite_name = pytest_suite
+junitxml = reports/pytest_report.xml
+
+# 設定 logging 相關選項
+log_cli = true
+log_cli_level = INFO
+log_file = logs/pytest.log
+log_file_level = DEBUG
+log_format = %(asctime)s [%(levelname)s] %(message)s
+log_date_format = %Y-%m-%d %H:%M:%S
+
+# 自訂 marker，這些 marker 可用於區分測試
+markers = 
+    slow: 執行較慢的測試 ; 說明文字
+    regression: 回歸測試
+    integration: 整合測試
+```
+
+## Global
+
+### `conftest.py`
 
 + **說明**
   1. 其中的 fixture 可跨模組使用。有效範圍 : 當前目錄及其子目錄中的 test case 都可以使用，<mark>**無須 import**</mark>。
@@ -135,11 +182,12 @@
         print("the current environment is:", pytestconfig.getoption("env"))
     ```
 
-## Tutorial
+## API
 
 ### 斷言驗證
   ```py
   def test_demo():
+      # 1 個 test case
       assert 1 + 1 == 2
   ```
 
@@ -415,7 +463,41 @@
       assert result == 42
   ```
 
+### 標記 : `mark.?`
 
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |要先在 `pytest.ini` 註冊，方可使用自訂標記|
+  
+  + **標記自訂 marker**
+    ```py
+    # in ./tests/test_something.py
+    @pytest.mark.database
+    def test_database_connection(): # 被標記
+        pass
+
+    def test_case_a():
+        pass
+
+    @pytest.mark.database
+    class TestDatabaseCrud:
+        def test_create(self): # 被標記
+            pass
+        
+        def test_read(self): # 被標記
+            pass
+        
+        def test_update(self): # 被標記
+            pass
+        
+        def test_delete(self): # 被標記
+            pass
+    ```
+
+  + **只選擇有 mark.database 的 test case 進行測試**
+    ```bash
+    pytest -m database
+    ```
 
 ### 內建標記 : 條件跳過案例 `mark.skip` / `mark.skipif`
 
@@ -492,9 +574,9 @@
   基本上功能與 fixture 傳遞引數寫法無異。\
   但通常用在欲使用 fixture 達成 <mark>context management</mark> 的場合，\
   而非使用它的回傳值做用途的場合。\
-  上下文的進入順序 : 傳遞引數由左至右 -> usefixtures 由下至上
+  上下文順序 : 由左至右、由下至上
 
-  + **context management : <mark>fixture + yield</mark>**
+  + **context management : fixture + yield**
 
     ```py
     @pytest.fixture
@@ -516,7 +598,8 @@
         print("teardown 3")
 
     # 注意上下文順序
-    @pytest.mark.usefixtures("func_1", "func_2", "func_3")
+    @pytest.mark.usefixtures("func_3")
+    @pytest.mark.usefixtures("func_1", "func_2")
     def test_func():
         print("Hello!")
         # setup 1
@@ -528,10 +611,10 @@
         # teardown 1
     ```
 
-  + **為什麼不用 setup / teardown 做 context management 就好**
+  + **為什麼不用 `setup` / `teardown` 就好？**
 
     不像 setup / teardown 函數無法傳遞引數，\
-    使用 fixture 做 context management 的好處是可以傳遞引數。\
+    使用 fixture 做 context management 的好處是<mark>可以傳遞引數</mark>。\
     如下，傳遞的引數為 `test_session`
     
     ```py
@@ -564,41 +647,39 @@
         assert result.birthday == test_user.birthday
     ```
 
-### 自訂標記 : `mark.?`
 
-  + **註冊自訂 marker**
-    ```ini
-    # in ./pytest.ini
-    [pytest]
-    markers =
-        database: mark test as database. ; 註冊並說明這個 marker 的用途
-    ```
-  + **標記自訂 marker**
-    ```py
-    # in ./tests/test_something.py
-    @pytest.mark.database
-    def test_database_connection(): # 被標記
-        pass
+# pytest-cov
 
-    def test_case_a():
-        pass
+插件：覆蓋率測試
 
-    @pytest.mark.database
-    class TestDatabaseCrud:
-        def test_create(self): # 被標記
-            pass
-        
-        def test_read(self): # 被標記
-            pass
-        
-        def test_update(self): # 被標記
-            pass
-        
-        def test_delete(self): # 被標記
-            pass
-    ```
 
-  + **只選擇有 mark.database 的 test case 進行測試**
-    ```bash
-    pytest -m database
-    ```
+## CLI
+
++ **選項**
+  ```bash
+  pytest
+  ```
+  + `--cov=<path>` : 只根據指定路徑，進行覆蓋率測試 (會產生一個 `.coverage` 檔)
+  + `--cov-report=<type>` : 產生覆蓋率測試報告 (`html` / `xml` 等等)
+  + `--cov-config=<path>` : 覆蓋率測試的 config (預設是 `.coveragerc`)
+
++ 快速打開覆蓋率測試 HTML 報告 (Windows)
+  ```bat
+  @echo off
+  set "REPORT_PATH=%CD%\htmlcov\index.html"
+  start chrome %REPORT_PATH%
+  ```
+
+## Config
+
+### `.coveragerc`
+
+  ```ini
+  [run]
+  # .coverage 路徑 (含檔案名稱)
+  data_file = ...
+  # 覆蓋率測試要包含哪些檔案
+  include = ...
+  # 覆蓋率測試要排除哪些檔案
+  omit = ...
+  ```
