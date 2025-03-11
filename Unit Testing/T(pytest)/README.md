@@ -13,10 +13,6 @@
 + 🎞️ [**ArjanCodes - How To Write Unit Tests For Existing Python Code // Part 1 of 2**](https://youtu.be/ULxMQ57engo?si=lhBSt6jt0NFBXTAS)
 + 🎞️ [**ArjanCodes - How To Write Unit Tests For Existing Python Code // Part 2 of 2**](https://youtu.be/NI5IGAim8XU?si=MxcKvp_wooG7H3oF)
 
-## To-Do Lists
-  + [ ] pytest.ini
-  + [ ] TDD (測試驅動開發)
-
 ## Note
 
 |📘 <span class="note">NOTE</span>|
@@ -182,7 +178,7 @@ markers =
         print("the current environment is:", pytestconfig.getoption("env"))
     ```
 
-## API
+## Usage
 
 ### 斷言驗證
   ```py
@@ -652,21 +648,29 @@ markers =
 
 插件：覆蓋率測試
 
+## References
++ 📑 [**Documentation - pytest-cov**](https://pytest-cov.readthedocs.io/en/latest/index.html)
+
+## Note
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+|預設的覆蓋率計算方法是<mark>[行數覆蓋 (line coverage)](https://hackmd.io/@RogelioKG/testing#%E7%99%BD%E7%AE%B1%E6%B8%AC%E8%A9%A6-white-box-testing)</mark>|
 
 ## CLI
 
 + **選項**
   ```bash
-  pytest
+  pytest --cov=src --cov-report=html:tests/report
   ```
   + `--cov=<path>` : 只根據指定路徑，進行覆蓋率測試 (會產生一個 `.coverage` 檔)
-  + `--cov-report=<type>` : 產生覆蓋率測試報告 (`html` / `xml` 等等)
+  + `--cov-report=<type>:<path>` : 產生覆蓋率測試報告 (`<type>` 指定格式，如 `html` / `xml`；`<path>` 指定報告輸出目錄)
   + `--cov-config=<path>` : 覆蓋率測試的 config (預設是 `.coveragerc`)
+  + `--cov-branch` : 將覆蓋率計算方法設為<mark>分支覆蓋 (branch coverage)</mark>
 
 + 快速打開覆蓋率測試 HTML 報告 (Windows)
   ```bat
   @echo off
-  set "REPORT_PATH=%CD%\htmlcov\index.html"
+  set "REPORT_PATH=%CD%\tests\report\index.html"
   start chrome %REPORT_PATH%
   ```
 
@@ -677,9 +681,202 @@ markers =
   ```ini
   [run]
   # .coverage 路徑 (含檔案名稱)
-  data_file = ...
+  data_file = tests/.coverage
   # 覆蓋率測試要包含哪些檔案
   include = ...
   # 覆蓋率測試要排除哪些檔案
   omit = ...
+  ```
+
+
+## Usage
+
+### 內建夾具 : 不計入覆蓋率 `no_cover`
+無效化某個 test case 所造成的覆蓋
+```py
+def test_deactivate_user(no_cover):
+    user = User("testuser", "test@example.com")
+    user.deactivate()
+    assert not user.is_active()
+```
+
+# pytest-mock
+
+插件：提供 [Stub、Mock、Spy](https://hackmd.io/@RogelioKG/testing#stub--mock--spy) 等功能，擴充自標準庫的 `unittest.mock`
+
+
+## References
++ 📑 [**Documentation - pytest-mock**](https://pytest-mock.readthedocs.io/en/latest/index.html)
+
+## Usage
+
+### 內建夾具 : Mocker `mocker`
+
++ mock 物件
+  + 每種功能都會回傳一個 mock 物件
+  + 你可以藉由這個 mock 物件，進行監控呼叫或停止等操作。
+  + 方法
+    | method | description |
+    |------|------|
+    | `mock.assert_called()` | 確保 mock 物件至少被呼叫一次 |
+    | `mock.assert_called_once()` | 確保 mock 物件只被呼叫一次 |
+    | `mock.assert_called_with(*args, **kwargs)` | 確保 mock 物件最後一次呼叫的參數符合 |
+    | `mock.assert_called_once_with(*args, **kwargs)` | 確保 mock 物件只被呼叫一次，且參數完全匹配 |
+    | `mock.assert_any_call(*args, **kwargs)` | 確保 mock 物件至少有一次以該參數呼叫 |
+    | `mock.assert_has_calls([call(*args, **kwargs), call(*args, **kwargs), ...], any_order=False)` | 確保 mock 物件有一組特定的呼叫序列，可選擇順序是否無關。記得 `from unittest.mock import call`！ |
+    | `mock.assert_not_called()` | 確保 mock 物件從未被呼叫過 |
+    | `mock.assert_call_count(n)` | 確保 mock 物件被呼叫 `n` 次 |
+
++ `mocker.patch` : mock 功能 - 全域補丁一個東西\
+  (基本上就是猴子補丁，類似 `pytest.monkeypatch` 和 `unittest.mock.patch`)
+  ```py
+  import os
+  from pytest_mock import MockFixture
+
+  class UnixFS:
+      @staticmethod
+      def rm(filename: str):
+          os.remove(filename)
+
+  def test_unix_fs(mocker: MockFixture):
+      mock = mocker.patch("os.remove")
+      UnixFS.rm("file")
+      mock.assert_called_once_with("file")
+      # 或者這樣寫也是可以的
+      # mocker.patch("os.remove")
+      # UnixFS.rm("file")
+      # os.remove.assert_called_once_with("file")
+  ```
++ `mocker.patch.object` : mock 功能 - 針對某物件補丁一個東西
+  ```py
+  from pytest_mock import MockFixture
+
+  class MyClass:
+      def method(self):
+          return "real method"
+
+  def test_patch_object(mocker: MockFixture):
+      instance1 = MyClass()
+
+      # 這裡補丁的是實例的 __dict__ 內的函數
+      mock = mocker.patch.object(instance1, "method", return_value="mocked method")
+      assert instance1.method() == "mocked method"
+
+      instance2 = MyClass()
+      assert instance2.method() == "real method"
+  ```
++ `mocker.patch.multiple` : mock 功能 - 針對某物件補丁多個東西
+  ```py
+  from pytest_mock import MockFixture
+
+  class MyClass:
+      def method1(self):
+          return "real method1"
+
+      def method2(self):
+          return "real method2"
+
+  def test_patch_multiple(mocker: MockFixture):
+      instance = MyClass()
+
+      # 類別自身也是一個物件，這裡補丁的是類別的 __dict__ 內的函數
+      mock = mocker.patch.multiple(
+          MyClass,
+          method1=lambda self: "mocked method1",
+          method2=lambda self: "mocked method2",
+      )
+
+      assert instance.method1() == "mocked method1"
+      assert instance.method2() == "mocked method2"
+  ```
++ `mocker.patch.dict` : mock 功能 - 特別針對字典補丁\
+  (此處的補丁是 update 而不是一般的 assignment，非常適用於環境變數)
+  ```py
+  import os
+  from pytest_mock import MockFixture
+
+  os.environ["MY_ENV_VAR"] = "value"
+
+  def test_patch_dict(mocker: MockFixture):
+      mock = mocker.patch.dict("os.environ", {"MY_MOCK_ENV_VAR": "mocked_value"})
+
+      # 原本的環境變數並沒有不見 (若使用 mocker.patch 會讓整個字典直接被換掉)
+      assert os.environ["MY_ENV_VAR"] == "value"
+      assert os.environ["MY_MOCK_ENV_VAR"] == "mocked_value"
+  ```
++ `mocker.stop` : 停止一個 mock 物件的功能
+  ```py
+  from pytest_mock import MockFixture
+
+  class MyClass:
+      def method(self):
+          return "real method"
+
+  def test_stop(mocker: MockFixture):
+      instance = MyClass()
+      
+      # Mock method
+      mock = mocker.patch.object(instance, "method", return_value="mocked method")
+      assert instance.method() == "mocked method"  # 🚩 被 mock 了
+
+      # 停止 mock，恢復原始行為
+      mocker.stop(mock)
+      assert instance.method() == "real method"  # ✅ 回到原本的方法
+  ```
++ `mocker.stopall` : 停止所有 mock 物件的功能
+  ```py
+  import os
+  import pytest
+  from pytest_mock import MockFixture
+
+  os.environ["MY_ENV_VAR"] = "value"
+
+  class MyClass:
+      def method(self):
+          return "real method"
+
+  def test_stop_all(mocker: MockFixture):
+      mock1 = mocker.patch.dict("os.environ", {"MY_MOCK_ENV_VAR": "mocked_value"})
+      mock2 = mocker.patch.object(MyClass, "method", return_value="mock method")
+
+      instance = MyClass()
+
+      assert os.environ["MY_ENV_VAR"] == "value"
+      assert os.environ["MY_MOCK_ENV_VAR"] == "mocked_value"
+      assert instance.method() == "mock method"
+
+      mocker.stopall()
+
+      with pytest.raises(KeyError) as err:
+          os.environ["MY_MOCK_ENV_VAR"]
+      assert err.typename == "KeyError"
+
+      assert instance.method() == "real method"
+  ```
++ `mocker.spy` : spy 功能
+  ```py
+  class Foo(object):
+      def bar(self, v):
+          return v * 2
+
+  def test_spy_method(mocker):
+      foo = Foo()
+      spy = mocker.spy(foo, 'bar')
+      assert foo.bar(21) == 42
+
+      spy.assert_called_once_with(21)
+      assert spy.spy_return == 42
+  ```
++ `mocker.stub` : stub 功能
+  ```py
+  from typing import Callable
+  from pytest_mock import MockFixture
+
+  def foo(on_something: Callable[[str, str], str]):
+      on_something("foo", "bar")
+
+  def test_stub(mocker: MockFixture):
+      stub = mocker.stub(name="on_something_stub")
+      foo(stub)
+      stub.assert_called_once_with("foo", "bar")
   ```
