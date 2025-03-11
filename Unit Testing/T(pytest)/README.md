@@ -857,7 +857,7 @@ def test_deactivate_user(no_cover):
   ```py
   from pytest_mock import MockFixture
 
-  class Foo():
+  class Foo:
       def bar(self, v):
           return v * 2
 
