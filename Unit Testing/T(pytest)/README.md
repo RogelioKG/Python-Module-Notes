@@ -855,11 +855,13 @@ def test_deactivate_user(no_cover):
   ```
 + `mocker.spy` : spy 功能
   ```py
-  class Foo(object):
+  from pytest_mock import MockFixture
+
+  class Foo():
       def bar(self, v):
           return v * 2
 
-  def test_spy_method(mocker):
+  def test_spy_method(mocker: MockFixture):
       foo = Foo()
       spy = mocker.spy(foo, 'bar')
       assert foo.bar(21) == 42
