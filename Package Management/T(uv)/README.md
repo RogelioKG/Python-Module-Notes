@@ -2,11 +2,6 @@
 
 [![RogelioKG/uv](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/uv)
 
-## Brief
-我們的 🐍 Python 終於也有了一個像樣的 package manger。\
-一手包辦 multi version, dependency (install, uninstall, lockfile...), virtual env, publish packages, and so on。\
-由 Rust 編寫，且[相較於 pip 快<mark>數十倍</mark>的速度](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
-
 ## References
 + 📑 [**Documentation - uv**](https://docs.astral.sh/uv/)
 + 🔗 [**使用 uv 管理 Python 環境**](https://dev.to/codemee/shi-yong-uv-guan-li-python-huan-jing-53hg)
@@ -20,15 +15,17 @@
 
 ## Advantages
 
+我們的 🐍 Python 終於也有了一個像樣的 package manger。
+
 + ✅ 良好的依賴解析
 
   刪除套件時，是真的會找出沒用到的依賴套件並刪除 (確保無 redundancy)
 
 + ✅ 不只是依賴管理工具
   
-  還集成非常多工具，out of the box 📦
+  集成非常多 out of the box 的工具 📦
   + multi version python
-  + dependency management (install, uninstall, lockfile...), 
+  + dependency management (install, uninstall, lockfile...)
   + virtual env
   + build & publish packages
 
