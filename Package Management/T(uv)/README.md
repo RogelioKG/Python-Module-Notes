@@ -18,6 +18,25 @@
   scoop install main/uv 
   ```
 
+## Advantages
+
++ ✅ 良好的依賴解析
+
+  刪除套件時，是真的會找出沒用到的依賴套件並刪除 (確保無 redundancy)
+
++ ✅ 不只是依賴管理工具
+  
+  還集成非常多工具，out of the box 📦
+  + multi version python
+  + dependency management (install, uninstall, lockfile...), 
+  + virtual env
+  + build & publish packages
+
++ ✅ 相較於 pip 快<mark>數十倍</mark>的速度
+
+  上個廁所褲子都還沒拉下來，uv 就已經以趕火車的速度，完成 dependency resolution 並 install。\
+  因為它是由 Rust 編寫而成的。詳細比對請見 [benchmark](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
+
 ## Note
 
 |📘 <span class="note">NOTE</span>|
@@ -205,9 +224,9 @@
 
 ### `export` 輸出 lockfile
 
-  + 輸出成 `requirements.txt`
+  + 輸出為 `requirements.txt`
     ```
-    uv export --no-hashes --format requirements-txt > requirements.txt
+    uv export --no-hashes --frozen --format requirements-txt -o=requirements.txt
     ```
 
 ### `build` / `publish` 構建 / 發布套件
@@ -227,7 +246,6 @@
 ### `pip` pip 相容介面
   ...
 
-
 ### `--index` 套件源
 
   可在 `pyproject.toml` 定義不同套件源，下指令時就可以加上 `--index` name 選擇。
@@ -243,3 +261,9 @@
   url = "https://test.pypi.org/simple/"
   publish-url = "https://test.pypi.org/legacy/"
   ```
+
+
+## Others
+
++ Linter / Formatter 功能請參考：[ruff](https://hackmd.io/@RogelioKG/ruff)
++ Precommit 功能請參考：[pre-commit](https://hackmd.io/@RogelioKG/pre-commit)
