@@ -234,6 +234,19 @@
   2. 會問你 username 和 password，但現已改成使用 API token 登入
       > 因此 username 你要輸入 `__token__`，password 再輸入 API token 即可。
 
+### `cache` 快取
+
+  uv 為了避免重複的下載，所以採取激進的快取策略。\
+  這會導致快取很容易變胖。
+
+  + `clean` | `prune`
+
+    這兩兄弟用法也是和 pnpm 很像，前者是移除所有快取，後者是指移除沒用到的快取。
+
+### `self` 針對 uv 自身的功能
+
+  + `update` 自行更新
+
 ### `lock` 手動生成 lockfile
   ...
 
@@ -259,6 +272,25 @@
   publish-url = "https://test.pypi.org/legacy/"
   ```
 
+  指定某個套件一定要從這個套件源下載
+  ```toml
+  [project]
+  dependencies = ["torch"]
+
+  [tool.uv.sources]
+  torch = [
+    { index = "pytorch-cu118", marker = "sys_platform == 'darwin'"},
+    { index = "pytorch-cu124", marker = "sys_platform != 'darwin'"},
+  ]
+
+  [[tool.uv.index]]
+  name = "pytorch-cu118"
+  url = "https://download.pytorch.org/whl/cu118"
+
+  [[tool.uv.index]]
+  name = "pytorch-cu124"
+  url = "https://download.pytorch.org/whl/cu124"
+  ```
 
 ## Others
 
