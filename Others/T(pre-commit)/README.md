@@ -15,7 +15,11 @@
 
 |🚨 <span class="caution">CAUTION</span>|
 |:---|
-|比如 uv-export 根據 `pyproject.toml` 和 `uv.lock` 來決定 `requirements.txt`。<br />而 pre-commit 就是檢查這些相依檔案是否有被 modified，來決定要不要跑自動流程。<br />所以請注意：手動刪除 `requirements.txt`，是不會在 commit 檢查時長回來的。<br />因為 `pyproject.toml` 和 `uv.lock` 沒有變！ |
+|`pre-commit` 不能用在 monorepo|
+
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+|比如 uv-export 根據 `pyproject.toml` 和 `uv.lock` 來決定 `requirements.txt`。<br />而 pre-commit 就是檢查這些相依檔案是否有被 modified，來決定要不要跑自動流程。<br />所以請注意：手動刪除 `requirements.txt`，是不會在 commit 檢查時長回來的。<br />因為 `pyproject.toml` 和 `uv.lock` 沒有變！|
 
 ## Config
 

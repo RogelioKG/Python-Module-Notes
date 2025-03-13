@@ -32,6 +32,10 @@
 | :--- |
 | 你也正在學 JavaScript npm / pnpm 嗎？<br />搭配這篇[⚡ JS 套件管理大師](https://hackmd.io/@RogelioKG/package_management_js) 一起服用，效果更好！ |
 
+|📗 <span class="tip">TIP</span>|
+|:---|
+|使用 `pip install -e .` (editable) 就可以將自己目前開發的套件，<br />暫時安裝到本地 venv，這樣就可以一邊開發一邊測試！<br />(記得開發完要重新再做一次此操作，才能看到改動的結果)|
+
 ### Nouns
 
 + **egg**

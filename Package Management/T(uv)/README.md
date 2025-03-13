@@ -50,6 +50,10 @@
 
 |🚨 <span class="caution">CAUTION</span>|
 |:---|
+|uv 目前還沒有自己的 build backend (他們是用現有的三方庫 `hatchling`)|
+
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
 |uv 目前還不支援 scripts (我愛 `npm scripts`)|
 
 ## Usage
@@ -86,7 +90,10 @@
       ```
     + `lib` 類型通常是一些函式庫
     + 可作為套件發布
-    + 使用 `uv sync` 時，會順便在 developer 本地 venv 安裝一次，可一邊開發一邊實驗功能
+    + 創建專案時 config 中就有 build system 的相關資訊，一定要有這個 `uv sync` 才會本地 venv 安裝
+    + 使用 `uv sync` 時，會順便在 developer 本地 venv 安裝一次，可一邊開發一邊測試功能
+      + 就跟 `pip install -e .` 一模一樣，只不過 uv 更強大，編輯後不用再重安裝，就可以直接測試
+      + 應該是利用把 `src/` 目錄加入 `sys.path` 辦到的吧
     + user 實際安裝時
       + 只有 `src/project_lib/` 目錄與其內容，會被放入 user 的 `.venv/Lib/site-packages/`
 
@@ -104,15 +111,18 @@
       ```
     + `package` 類型通常是一些好用的 CLI 工具
     + 可作為套件發布
-    + 使用 `uv sync` 時，會順便在 developer 本地 venv 安裝一次，可一邊開發一邊實驗功能
+    + 創建專案時 config 中就有 build system 的相關資訊，一定要有這個 `uv sync` 才會本地 venv 安裝
+    + 使用 `uv sync` 時，會順便在 developer 本地 venv 安裝一次，可一邊開發一邊測試功能
+      + 就跟 `pip install -e .` 一模一樣，只不過 uv 更強大，編輯後不用再重安裝，就可以直接測試
+      + 應該是利用把 `src/` 目錄加入 `sys.path` 辦到的吧
     + user 實際安裝時
       + 只有 `src/project_package/` 目錄與其內容，會被放入 user 的 `.venv/Lib/site-packages/`
-      + 會在 `.venv/Scripts/` 生成執行檔，供 user 調用 (記得他得先進入 venv 才能用)
-    + 入口點 (developer 應以這樣的架構去開發)
+      + <mark>會在 `.venv/Scripts/` 生成執行檔，供 user 調用</mark> (記得他得先進入 venv 才能用)
+    + 入口點 (應以這樣的架構去開發)
       ```toml
       # pyproject.toml
       [project.scripts]
-      rogeliokg-cli = "rogeliokg_cli.cli:cli"
+      rogeliokg-cli = "rogeliokg_cli.__main__:cli"
       ```
       ```
       rogeliokg-cli/
@@ -120,12 +130,12 @@
       └── src/
           └── rogeliokg_cli/
               ├── __init__.py
-              ├── cli.py
+              ├── __main__.py
               └── commands/
                   └── ...
       ```
       ```py
-      # src/rogeliokg_cli/cli.py
+      # src/rogeliokg_cli/__main__.py
       import click
       from rogeliokg_cli.commands.hello import hello
       from rogeliokg_cli.commands.config import config
