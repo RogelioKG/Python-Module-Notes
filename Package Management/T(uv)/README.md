@@ -17,11 +17,11 @@
 
 我們的 🐍 Python 終於也有了一個像樣的 package manger。
 
-+ ✅ 良好的依賴解析
+### ✅ 良好的依賴解析
 
   刪除套件時，是真的會找出沒用到的依賴套件並刪除 (確保無 redundancy)
 
-+ ✅ 不只是依賴管理工具
+### ✅ 不只是依賴管理工具
   
   集成非常多 out of the box 的工具 📦
   + multi version python
@@ -29,7 +29,7 @@
   + virtual env
   + build & publish packages
 
-+ ✅ 相較於 pip 快<mark>數十倍</mark>的速度
+### ✅ 相較於 pip 快<mark>數十倍</mark>的速度
 
   上個廁所褲子都還沒拉下來，uv 就已經以趕火車的速度，完成 dependency resolution 並 install。\
   因為它是由 Rust 編寫而成的。詳細比對請見 [benchmark](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
@@ -50,11 +50,7 @@
 
 |🚨 <span class="caution">CAUTION</span>|
 |:---|
-|uv 目前還沒有自己的 build backend (他們是用現有的三方庫 `hatchling`)|
-
-|🚨 <span class="caution">CAUTION</span>|
-|:---|
-|uv 目前還不支援 scripts (我愛 `npm scripts`)|
+|uv 目前還不支援 scripts (噢！我愛 `npm scripts`)|
 
 ## Usage
 
