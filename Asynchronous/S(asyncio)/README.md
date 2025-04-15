@@ -197,7 +197,7 @@ class BaseTask:
         self.payload = payload
         self.task_id = task_id
 
-    async def run(self) -> tuple[int, int]:
+    async def run(self) -> tuple[str, int]:
         """樣板方法 (一個任務固定經過三個步驟)"""
         await self.step_one()
         await self.step_two()
