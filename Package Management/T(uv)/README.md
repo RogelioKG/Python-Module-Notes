@@ -46,6 +46,10 @@
 |:---|
 |此 package manager 的 lockfile 為 `uv.lock`|
 
+|📘 <span class="note">NOTE</span>|
+|:---|
+|uv 預設使用 hardlink (連到快取) 安裝<br />(某一天筆者不小心跨槽安裝，結果發現跳警告，意外發現這個事實)|
+
 |🚨 <span class="caution">CAUTION</span>|
 |:---|
 |uv 目前還沒有自己的 build backend (他們是用現有的第三方庫 `hatchling`)|
