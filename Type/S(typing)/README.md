@@ -1,5 +1,7 @@
 # typing
 
+[![RogelioKG/typing](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/typing)
+
 ## References
 + 🔗 [**好豪 - Python Type Hints 教學：我犯過的 3 個菜鳥錯誤**](https://haosquare.com/python-type-hints-3-beginner-mistakes/)
 + 🔗 [**MyApollo - Python 的 typing.Protocol 怎麼使用？**](https://myapollo.com.tw/blog/python-typing-protocol/)
@@ -53,6 +55,8 @@ assert Point2D(x=1, y=2, label="first") == dict(x=1, y=2, label="first")
 ```
 
 ### `Annotated` 註釋
+單純註釋，但可被靜態型別檢查器、第三方函式庫等利用。\
+(例如：[可被 Pydantic 用作 validator](https://hackmd.io/@RogelioKG/pydantic#Validators))
 ```py
 from typing import Annotated
 
@@ -197,6 +201,71 @@ if __name__ == "__main__":
 # (method) def get(key: int) -> str
 ```
 
+### `Self` 實例自身
+
+`set_scale` 回傳的是 `Shape`，\
+然而 `Shape` 並沒有 `set_radius` 方法。\
+靜態型別檢查器會報錯。
+```py
+from __future__ import annotations
+
+
+class Shape:
+    def set_scale(self, scale: float) -> Shape:
+        self.scale = scale
+        return self
+
+
+class Circle(Shape):
+    def set_radius(self, r: float) -> Circle:
+        self.radius = r
+        return self
+
+
+Circle().set_scale(0.5).set_radius(2.7)
+```
+一個最簡單的方式是自己設 `TypeVar`，但這的確很麻煩
+```py
+
+from __future__ import annotations
+
+from typing import TypeVar
+
+TShape = TypeVar("TShape", bound="Shape")
+
+
+class Shape:
+    def set_scale(self: TShape, scale: float) -> TShape:
+        self.scale = scale
+        return self
+
+
+class Circle(Shape):
+    def set_radius(self, radius: float) -> Circle:
+        self.radius = radius
+        return self
+
+
+Circle().set_scale(0.5).set_radius(2.7)  # => Circle
+```
+3.11 後，有個更簡單的寫法 `Self`。\
+詳見 [PEP 673](https://peps.python.org/pep-0673/)。
+```py
+class Shape:
+    def set_scale(self, scale: float) -> Self:
+        self.scale = scale
+        return self
+
+
+class Circle(Shape):
+    def set_radius(self, radius: float) -> Circle:
+        self.radius = radius
+        return self
+
+
+Circle().set_scale(0.5).set_radius(2.7)
+```
+
 ### `Protocol` 協議
 
 協議是 Duck Typing 的體現。\
@@ -254,6 +323,24 @@ def foo(*args: str, **kwargs: int):
     
 if __name__ == "__main__":
     foo("a", "b", "c", x=1, y=2, z=3)
+```
+
+### `from __future__ import annotation`
+
+避免 Python 立即解析類型註解，而引發 NameError
+```py
+from __future__ import annotations # 一定要寫在第一行
+
+
+class Node:
+    def __init__(self, next_node: Node | None = None):
+        self.next = next_node
+```
+要不然就寫成字串
+```py
+class Node:
+    def __init__(self, next_node: "Node" | None = None):
+        self.next = next_node
 ```
 
 ### covariant, invariant, contravariant

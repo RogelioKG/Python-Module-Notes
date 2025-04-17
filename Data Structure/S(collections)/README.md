@@ -1,5 +1,7 @@
 # collections
 
+[![RogelioKG/collections](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/collections)
+
 ## `collections.abc` 抽象容器
 [📑 抽象容器整理表](https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes)
 
