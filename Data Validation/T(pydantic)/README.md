@@ -26,21 +26,24 @@
 ### `BaseModel` [Model](https://docs.pydantic.dev/latest/concepts/models/#model-methods-and-properties)
 + 允許嵌套
 + 方法
-    + `model_validate()` (instance method)
-        + 輸入：object（可以是 dict 或是 ORM 物件）
-        + 輸出：Model 物件
-    + `model_validate_json()` (instance method)
-        + 輸入：字串 (JSON)
-        + 輸出：Model 物件
-    + `model_dump()` (instance method)
-        + 輸出：dict
-    + `model_dump_json()` (instance method)
-        + 輸出：字串 (JSON)
-    + `model_json_schema()` (class method)
-        + 參數
-            + `mode="validation"` (輸入的 JSON Schema)\
-              `mode="serialization"` (輸出的 JSON Schema)
-        + 輸出：dict (JSON Schema)
+    + 驗證 (<mark>若允許 None，Model 屬性型別要多標註 `| None` ，並給預設值 `None`</mark> )
+        + `model_validate()` (class method)
+            + 輸入：object（可以是 dict 或是 ORM 物件）
+            + 輸出：Model 物件
+        + `model_validate_json()` (class method)
+            + 輸入：字串 (JSON)
+            + 輸出：Model 物件
+    + 倒出 (<mark>使用 `exclude_unset=True` 過濾 None 值</mark> )
+        + `model_dump()` (instance method)
+            + 輸出：dict
+        + `model_dump_json()` (instance method)
+            + 輸出：字串 (JSON)
+    + JSON Schema
+        + `model_json_schema()` (class method)
+            + 參數
+                + `mode="validation"` (輸入的 JSON Schema)\
+                  `mode="serialization"` (輸出的 JSON Schema)
+            + 輸出：dict (JSON Schema)
 + 搭配 ORM
     ```py
     with db.Session() as session:
@@ -231,6 +234,63 @@
             description="The role of the user",
         )
     ```
+    一個更乾淨的寫法
+    ```py
+    class UserType:
+        Name = Annotated[
+            str,
+            Field(description="使用者姓名", example="RogelioKG"),
+        ]
+        Email = Annotated[
+            EmailStr,
+            Field(description="使用者電子郵件", example="user@example.com"),
+        ]
+        Avatar = Annotated[
+            str,
+            Field(description="使用者頭像圖片網址，可為空", example="https://example.com/avatar.jpg"),
+        ]
+        Password = Annotated[
+            SecretStr,
+            Field(min_length=6, description="使用者登入密碼，至少 6 個字元", example="securePass123"),
+        ]
+        Age = Annotated[
+            int,
+            Field(gt=0, lt=100, description="使用者年齡，需介於 1 到 99 歲", example=25),
+        ]
+        Birthday = Annotated[
+            date,
+            Field(description="使用者生日（格式 YYYY-MM-DD）", example="1998-08-08"),
+        ]
+
+
+    class UserBase(BaseModel):
+        name: UserType.Name
+        email: UserType.Email
+        avatar: UserType.Avatar | None = None
+
+        model_config = ConfigDict(from_attributes=True)
+
+
+    class UserCreate(UserBase):
+        password: UserType.Password
+        age: UserType.Age
+        birthday: UserType.Birthday
+
+
+    class UserRead(UserBase):
+        age: UserType.Age
+        birthday: UserType.Birthday
+
+
+    class UserUpdate(BaseModel):
+        name: UserType.Name | None = None
+        email: UserType.Email | None = None
+        avatar: UserType.Avatar | None = None
+        password: UserType.Password | None = None
+        age: UserType.Age | None = None
+        birthday: UserType.Birthday | None = None
+    ```
+
 + discriminated union
 
     一種特殊的 Union 型別，<mark>用來描述多個子型別共用一個屬性 (通常是字串)，並根據這個屬性的值來區分不同型別的結構</mark>。\

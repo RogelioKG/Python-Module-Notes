@@ -58,11 +58,11 @@
 |:---|
 |uv 目前還不支援 scripts (噢不！我愛 `npm scripts`)|
 
-## Usage
+## Commands
 
 請參考 [UV CLI](https://docs.astral.sh/uv/reference/cli/#uv)。
 
-### `init` 創建專案
+### `init`：創建專案
 
   + `--python` 指定 Python 版本
 
@@ -173,7 +173,7 @@
   > 你可以自己指定第三方 build backend，比如：`hatch` (hatchling)、`setuptools` (setuptools)。\
   > 預設是 `hatch` (hatchling)。
 
-### `run` 執行腳本
+### `run`：執行腳本
   
   + 一般執行
     ```
@@ -186,7 +186,7 @@
     ```
 
 
-### `venv` 虛擬環境
+### `venv`：虛擬環境
 
   + 創建虛擬環境 (預設目錄名 `.venv`)
 
@@ -206,23 +206,19 @@
     uv venv --python 3.11.4
     ```
 
-### `add` / `remove` 安裝 / 移除套件
+### `add` / `remove`：安裝 / 移除套件
 
   uv 如 poetry 或 pnpm 一樣，會自動解析並順便移除沒用到的相依套件。並且有 lockfile 嚴格管理套件版本。
 
   + `--no-sync` 不自動同步
     > 只解析依賴，然後更新 `pyproject.toml` 和 `uv.lock`，不會自動使用 `uv sync` 安裝或移除套件。
 
-### `sync` 同步套件
+### `sync`：同步套件
 
   <mark>安裝全部套件的加強版</mark>。\
   假如發生一些意外，導致你的 venv 缺了某些套件，或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
 
-  + `--group` 安裝指定 group 的可選套件
-  + `--no-dev` 安裝非 dev group 的套件
-  + `--only-dev` 安裝 dev group 的套件
-
-### `tool` 工具
+### `tool`：工具
 
   工具是一種提供 CLI 的執行檔或 Python 套件。\
   工具會被獨立安裝在特別的環境 (非專案內的 venv)，以避免受相依套件影響。
@@ -242,7 +238,7 @@
     uv tool dir
     ```
 
-### `python` 多版本
+### `python`：多版本
 
   + `list` 列出
     ```
@@ -266,14 +262,14 @@
       ```
 
 
-### `export` 輸出 lockfile
+### `export`：輸出 lockfile
 
   + 輸出為 `requirements.txt`
     ```
-    uv export --no-hashes --frozen --format requirements-txt > requirements.txt
+    uv export --no-hashes --frozen --no-group dev --format requirements-txt > requirements.txt
     ```
 
-### `build` / `publish` 構建 / 發布套件
+### `build` / `publish`：構建 / 發布套件
 
   `uv build` + `uv publish`，就這麼簡單。唯 publish 時須注意兩點：
   1. 發布到不同套件源 (比如 testpypi)
@@ -281,7 +277,7 @@
   2. 會問你 username 和 password，但現已改成使用 API token 登入
       > 因此 username 你要輸入 `__token__`，password 再輸入 API token 即可。
 
-### `cache` 快取
+### `cache`：快取
 
   uv 為避免重複的下載，採取激進的快取策略，這導致快取容易變胖，要定期 prune。
 
@@ -289,23 +285,37 @@
 
     這兩兄弟用法也是和 pnpm 很像，前者是完全清除所有快取，後者僅移除沒用到的快取。
 
-### `self` 針對 uv 自身的功能
+### `self`：針對 uv 自身的功能
 
   + `update` 自行更新
     > 只能用在 standalone 安裝版 (比如 Linux 的 `curl` 或 `wget`、Windows 的 `irm`)，\
     > 若使用 Linux 的 `apt-get`、Mac 的 `brew`、Windows 的 `scoop` 等 package manager 安裝 `uv`，\
     > 需要使用 package manager 它們自己的 upgrade 方式。
 
-### `lock` 手動生成 lockfile
+### `lock`：手動生成 lockfile
   ...
 
-### `tree` 依賴樹
+### `tree`：依賴樹
   ...
 
-### `pip` 與 pip 相容的介面
+### `pip`：相容 pip 介面
   ...
 
-### `--index` 套件源
+### `generate-shell-completion` 自訂指令自動補全
+
++ PowerShell：放在 `$PROFILE` (腳本)
++ Bash：放在 `~/.bashrc` (腳本)
+
+註：開啟 shell 時，會先執行一遍這個初始化腳本，註冊設定。
+
++ 將 uv 的自動補全腳本，注入到初始化腳本內
+  ```
+  uv generate-shell-completion powershell >> $PROFILE
+  ```
+
+## Options
+
+### `--index`：指定套件源
 
   可在 `pyproject.toml` 定義不同套件源，下指令時就可以加上 `--index` name 選擇。
   ```toml
@@ -341,17 +351,14 @@
   url = "https://download.pytorch.org/whl/cu124"
   ```
 
-### `generate-shell-completion` 自訂指令自動補全
+### `--group` / `--no-group`：指定相依套件組
+將 ruff 安裝到 dev groups
+```
+uv add ruff --group dev
+```
 
-+ PowerShell：放在 `$PROFILE` (腳本)
-+ Bash：放在 `~/.bashrc` (腳本)
 
-註：開啟 shell 時，會先執行一遍這個初始化腳本，註冊設定。
-
-+ 將 uv 的自動補全腳本，注入到初始化腳本內
-  ```
-  uv generate-shell-completion powershell >> $PROFILE
-  ```
+### 
 
 ## Others
 

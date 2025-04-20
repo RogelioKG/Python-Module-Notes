@@ -6,6 +6,12 @@
 + 🔗 [**好豪 - Python Type Hints 教學：我犯過的 3 個菜鳥錯誤**](https://haosquare.com/python-type-hints-3-beginner-mistakes/)
 + 🔗 [**MyApollo - Python 的 typing.Protocol 怎麼使用？**](https://myapollo.com.tw/blog/python-typing-protocol/)
 
+## Note
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+|此筆記所使用的 Python 版本為 3.12|
+|Python 近幾年在 type annotation 的道路上狂奔突進，deprecated 與 features 等層出不窮，也許這篇筆記不到半年就會變成考古學家手上的資料！|
+
 
 ## Usage
 
@@ -55,14 +61,68 @@ assert Point2D(x=1, y=2, label="first") == dict(x=1, y=2, label="first")
 ```
 
 ### `Annotated` 註釋
-單純註釋，但可被靜態型別檢查器、第三方函式庫等利用。\
-(例如：[可被 Pydantic 用作 validator](https://hackmd.io/@RogelioKG/pydantic#Validators))
+型別標註的額外資訊，其可被 `inspect` 標準庫中的黑魔法 `signature()` 提煉出來。
+常被靜態型別檢查器、第三方函式庫等利用。
++ [Pydantic - Validator](https://docs.pydantic.dev/latest/concepts/validators/#__tabbed_1_1)
++ [FastAPI - Depends](https://fastapi.tiangolo.com/tutorial/dependencies/#import-depends)
 ```py
 from typing import Annotated
 
 
 def hello(name: Annotated[str, "first letter is capital"]):
     print(f"hello {name}!")
+```
+手刻驗證器 (向 Pydantic 致敬一波)
+```py
+import inspect
+from functools import wraps
+from typing import Annotated, get_args
+
+# validator
+def min_length_3(value: str) -> str:
+    if len(value) < 3:
+        raise ValueError(f"'{value}' is too short, must be at least 3 characters.")
+    return value
+
+def is_adult(value: int) -> int:
+    if value < 18:
+        raise ValueError(f"{value} is not an adult age (must be ≥ 18).")
+    return value
+
+def is_email(value: str) -> str:
+    if "@" not in value:
+        raise ValueError(f"'{value}' is not a valid email.")
+    return value
+
+# decorator
+def injectable(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # ⚠️ 仔細看這裡是怎麼取得註釋內的 validator
+        sig = inspect.signature(func)
+        for arg, param in zip(args, sig.parameters.values()):
+            annotation = param.annotation
+            validator = get_args(annotation)[1]
+            validator(arg)
+        return func(*args, **kwargs)
+    return wrapper
+
+@injectable
+def create_user(
+    username: Annotated[str, min_length_3],
+    age: Annotated[int, is_adult],
+    email: Annotated[str, is_email]
+):
+    return {
+        "username": username,
+        "age": age,
+        "email": email,
+    }
+
+print(create_user("Tommy", 21, "tommy@example.com"))    # ✅
+print(create_user("Al", 22, "al@example.com"))          # ❌ username 太短
+print(create_user("Alice", 16, "alice@example.com"))    # ❌ 未成年
+print(create_user("Bob", 30, "bobexample.com"))         # ❌ email 無效
 ```
 
 ### `NoReturn` 從不正常回傳的函數
@@ -79,26 +139,6 @@ def stop() -> NoReturn:
 if __name__ == "__main__":
     stop()
     a = 5
-```
-
-### `final` 無法繼承、無法覆寫
-```py
-# 被裝飾的類別無法被繼承(inherit)，被裝飾的方法無法覆寫(override)
-@final
-class Car():
-    @final
-    def meow():
-        pass
-```
-
-### `overload` 函數多載
-```py
-@overload
-def utf8(value: None) -> None: ...
-@overload
-def utf8(value: bytes) -> bytes: ...
-@overload
-def utf8(value: str) -> bytes: ...
 ```
 
 ### `TypeVar` 型別參數
@@ -309,8 +349,37 @@ device = SmartSpeaker()
 connect_device(device)
 ```
 
+### `final` 無法繼承、無法覆寫
+```py
+# 被裝飾的類別無法被繼承(inherit)，被裝飾的方法無法覆寫(override)
+@final
+class Car():
+    @final
+    def meow():
+        pass
+```
 
-## Note
+### `overload` 函數多載
+```py
+@overload
+def utf8(value: None) -> None: ...
+@overload
+def utf8(value: bytes) -> bytes: ...
+@overload
+def utf8(value: str) -> bytes: ...
+```
+
+### `get_origin`
+```py
+print(get_origin(list[int])) # <class 'list'>
+```
+
+### `get_args`
+```py
+print(get_args(list[int])) # (<class 'int'>,)
+```
+
+## Caution
 
 ### `args` & `kwargs`
 
