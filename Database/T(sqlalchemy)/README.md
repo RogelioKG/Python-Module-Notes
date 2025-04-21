@@ -278,10 +278,26 @@ async def create_user(
 # (為了抓取這個 ID，我們必須重新 query 一遍資料庫，將資料刷新回 ORM 實例)
 # 5. yield 後 (transaction ends)
 
-# 🤔 個人意見：我覺得不要用 autoincrement 啦，用 UUID 吧！
+# 🤔 個人意見：不要用 autoincrement 啦，用 UUID 吧！
 ```
 
 ## function
+
+### `create_engine()`
+
+```py=
+engine = create_engine(
+    get_settings().database_uri,
+    # connection pool 的 connection 數量 (預設 5)
+    pool_size=100,
+    # 容許多出的 connection 數量 (預設 10)
+    max_overflow=100,
+    # 當 connection pool 沒有 connection 時，願意等多久來拿 connection (預設 30)
+    pool_timeout=15,
+    # 當一條 connection 存在超過幾秒時，主動關掉並分配一條新連線 (預設 -1)
+    pool_recycle=1800,
+)
+```
 
 ### `text`
 + 直接執行 SQL
