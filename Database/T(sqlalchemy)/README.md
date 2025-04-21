@@ -3,58 +3,296 @@
 ![](https://media.licdn.com/dms/image/v2/D4E10AQHg03wvp6XmBg/image-shrink_1280/image-shrink_1280/0/1722610852769?e=1745780400&v=beta&t=-eil40RhZ0TzsMk_jVPWgn3x_RcR9jxAqcJrSxfO-cg)
 
 ## References
-+ 🔗 [**什么是 N+1 问题，以及如何解决**](https://segmentfault.com/a/1190000039421843)
++ 📄 [**SQLAlchemy - Unified Tutorial**](https://docs.sqlalchemy.org/en/20/tutorial/index.html)
++ 📄 [**SQLAlchemy - Using session**](https://docs.sqlalchemy.org/en/20/orm/session.html)
++ 💬 [**Reddit - Is it just me or are the docs for sqlalchemy a f*cking nightmare?**](https://www.reddit.com/r/Python/comments/12xrvwz/is_it_just_me_or_are_the_docs_for_sqlalchemy_a/)
 
-## ORM
-物件關係對映 (Object Relational Mapping)
-開發者可通過操作類別與實例，來對資料庫進行 CRUD 等操作，而不必直接操作 SQL 語句。
+## Controversy
+### pros
++ Python 原生環境的支持
+  + 型別、屬性提示
+  + column 由屬性控制，若想改名可藉由 IDE 批量更改名稱
++ 生產力的提升
++ 更安全
+  + 若使用 SQL，必須時時刻刻明白自己在做甚麼，且絕不犯錯
+### cons
++ 性能開銷
+  + 在執行期引入抽象層
++ 同一件事有太多種做法
+  + 違反 Zen of Python：[*There should be one obvious way to do it.*](https://zen-of-python.info/there-should-be-one-and-preferably-only-one-obvious-way-to-do-it.html#13)
++ 文檔混亂
+  + 筆者只推薦看 [References](#References) 列出的那兩篇文檔📄 (重點部分) 
+### well...
++ 替代品 (待觀察 👀) 
+  + [peewee](https://github.com/coleifer/peewee)
 
-1. 將<span style="color: cornflowerblue">表格</span>映射為<span style="color: firebrick">類別</span>
-2. 將<span style="color: cornflowerblue">欄位</span>映射為<span style="color: firebrick">屬性</span>
-3. 將<span style="color: cornflowerblue">記錄</span>映射為<span style="color: firebrick">實例</span>
 
+## Nouns
+
+### DB-API
+[DB-API 2.0 (PEP 249) ](https://peps.python.org/pep-0249/)
+
+Python 中存取資料庫的標準介面。\
+經典方法 `close()` / `commit()` / `rollback()` / `cursor()` 的行為規範就是從這裡來的。
+
+### ORM
+[物件關係對映 (Object Relational Mapping)](https://www.explainthis.io/zh-hant/swe/orm-intro)
+
+即開發者可通過操作類別與實例，來對資料庫進行 CRUD 等操作，\
+而不必直接去操作 SQL 語句。
+
+1. 將<span style="color: cornflowerblue">表格 (table)</span> 映射為<span style="color: firebrick">類別 (class)</span>
+2. 將<span style="color: cornflowerblue">欄位 (column)</span> 映射為<span style="color: firebrick">屬性 (attribute)</span>
+3. 將<span style="color: cornflowerblue">記錄 (record)</span> 映射為<span style="color: firebrick">實例 (instance)</span>
+
+
+### ORM object
+```py=
+# ORM 類別 (ORM class)
+class Employee(Base):
+    __tablename__ = "employee"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    emp_name: Mapped[str] = mapped_column(String(20), index=True)
+    birth_date: Mapped[date] = mapped_column(Date)
+    sex: Mapped[str] = mapped_column(String(1))
+    salary: Mapped[int] = mapped_column(Integer, CheckConstraint("salary >= 0"))
+    branch_id: Mapped[int] = mapped_column(ForeignKey("branch.id"), nullable=False)
+```
+```py=
+# ORM 實例 (ORM object)
+Employee(
+    emp_name="RogelioKG",
+    birth_date=datetime(2002, 8, 13),
+    sex="M",
+    salary=0,
+    branch_id=1,
+),
+```
 
 ## Session
-|🔮 <span class="important">IMPORTANT</span>|
-|:---|
-|一次 session 中，允許多次的 `commit()` 和 `rollback()` (參考：[SQLAlchemy - Managing Transactions](https://docs.sqlalchemy.org/en/13/orm/session_transaction.html#managing-transactions))|
-|未對資料庫操作前，session 是 begin 狀態；<br>對資料庫操作時（如 `execute()`），session 是 transactional 狀態；<br>一旦 `commit()` 之後，session 又回到 begin 狀態|
-|session 看似可產生一次，永久運行，實際上是不建議這麼做的。<br>session 本質上就是一個資料變更緩衝區 + ORM 實例管理器，<mark>設計上就是是暫時性的</mark>，而非永久性的。<br>在長時間運行的 web app 中，若沒有定期釋放，久了會導致 memory leak 或資料不一致。<br>請盡可能以<mark>一個任務一次 session</mark> 的方式去限制它的生命週期。|
 
-|🚨 <span class="caution">CAUTION</span>|
-|:---|
-|在<mark>使用 ORM 實例</mark>前請注意，若你位處一個 session 之中，<br>且在那之前有更新資料庫過 (`commit()`)，請記得先 `refresh()`，因為資料可能不一致！|
-|最常見的範例就是，ORM 實例無 id，由資料庫自動產生 id，那麼塞進資料庫後，id 欄位被自動補上，因此就產生了不一致。|
+### what is session?
++ 負責管理 ORM 實例與資料庫的交流
++ <mark>identity map</mark>
+  + session 內部維護一個資料結構，你可以理解成快取
+  + identity map 是一個 <mark>weakref value 字典</mark>
+    + key: `(ORM class, primary_key)`
+    + value: `ORM object` (weakref)
+  + <mark>session 藉由這個字典，紀錄它找過的所有資料</mark>
+  + query 資料
+    + 使用 `primary_key`：會先去 identity map 找，找不到才會去資料庫找
+    + 使用非 `primary_key`：直接去資料庫找
+    + 無論如何，找到的資料都會紀錄回 identity map 中 
+    ```py=
+    u1 = session.get(User, 5)
+    u2 = session.get(User, 5)
+    assert u1 is u2
+    ```
+    ![](https://martinfowler.com/eaaCatalog/index/idMapperSketch.gif)
 
-+ `expire_on_commit=False`
-    + 決定在呼叫 commit() 之後，session 中的「所有」 ORM 實例是否應該自動標記為過期，以便下次使用時自動從資料庫重新載入
-    + 若跟隨預設 (`True`)，當資料量龐大時，會[相當耗時](https://blog.youguanxinqing.xyz/index.php/archives/147/)
-    + 這邊選擇 `False`，所以我們要手動 `refresh()`
+### `add()` / `add_all()`
++ <mark>這是針對 session 的變更</mark>
++ session 加入新的 ORM 實例
 
-```py
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+### `delete()`
++ <mark>這是針對 session 的變更</mark>
++ session 將某 ORM 實例標記為刪除狀態
 
-engine = create_async_engine(os.getenv("DATABASE_URI"))
-async_session = async_sessionmaker(engine, expire_on_commit=False)
+### `get()`
++ 先去 identity map 找資料，找不到再去資料庫 query 資料
+
+### `execute()`
++ 直接去資料庫 query 資料
+
+### `flush()`
++ 將 session 的變更「暫時」寫回資料庫
++ 每當對資料庫發起 query 之前，自動執行一次
+  + 不一定，此操作取決於 [sessionmaker](#sessionmaker) 的 `autoflush` 選項
+
+### `expire()`
++ 讓指定的 ORM 實例過期 (清空它的所有屬性) 
++ 等到下次你要存取這個屬性時，再去資料庫 query 一遍
+  ```py=
+  session.expire(u1)
+  u1.some_attribute    # <-- lazy loads from the transaction
+  ```
+
+### `refresh()`
++ 讓指定的 ORM 實例[過期](#expire)
++ 然後立即向資料庫 query 一遍，補足所有屬性
+  ```py=
+  session.refresh(u1)  # <-- emits a SQL query
+  u1.some_attribute    # <-- is refreshed from the transaction
+  ```
+
+### `commit()`
++ 先 `flush()` 所有 session 的變更
++ 接著 session 中的所有 ORM 實例通通[過期](#expire)
+  + 不一定，此操作取決於 [sessionmaker](#sessionmakr) 的 `expire_on_commit` 選項
++ 一次 transaction 完成
+
+### `rollback()`
++ 本次 transaction 中，所有對資料庫的變更全部取消 (包含 `flush()` 的部分) 
++ 一次 transaction 完成
+
+### `begin()`
++ 自動管理 `rollback()` 與 `commit()`
++ style: <mark>commit as you go</mark>
+  ```py=
+  with Session(engine) as session:
+      try:
+          session.add(some_object)
+          session.add(some_other_object)
+      except:
+          session.rollback()
+          raise
+      else:
+          session.commit()
+  ```
++ style: <mark>begin once</mark>
+  ```py=
+  # ✅ 此處開始一個 connection (lazy)
+  with Session(engine) as session:
+      # ✅ 此處開始一個 transaction
+      with session.begin(): 
+          session.add(some_object)
+          session.add(some_other_object)
+      # 🟧 此處結束一個 transaction
+  # 🟧 此處結束一個 connection
+  ```
++ 這裡多補充一些關係，可看清它們背後管理的邏輯
+  ```py=
+  # Note：Session(engine) 回傳 session
+  # 其 __enter__() 回傳自身 (session)
+  with Session(engine) as session:
+      # Note：session.begin() 回傳 SessionTransaction(session)
+      # 其 __enter__() 回傳自身 (session_transaction)
+      with session.begin():
+          session.add(some_object)
+          session.add(some_other_object)
+      # session.commit() or session.rollback()
+  # session.close()
+  ```
+
+### `begin_nested()`
++ 即 SQL 中 `SAVEPOINT`：在 transaction 中還有個 nested transaction
++ 一旦發生 `rollback()`，只會回滾 nested transaction 的操作，不會回滾整個 transaction 的操作
+  ```py=
+  Session = sessionmaker()
+  with Session.begin() as session:
+      session.add(u1)
+      session.add(u2)
+
+      nested = session.begin_nested()  # establish a savepoint
+      session.add(u3)
+      nested.rollback()  # rolls back u3, keeps u1 and u2
+
+  # commits u1 and u2
+  ```
+
+### `expunge()`
++ 自 session 的 identity map 中移除指定的 ORM 實例 (這筆資料不想讓 session 管理了)
++ 此時 ORM 實例處於 detach 狀態
+
+### `close()`
++ 將 connection 歸還給 connection pool
+
+### `sessionmaker()`
++ `autoflush` (預設 True)
+  + 說明
+    + 每當對資料庫發起 query 之前，自動執行一次 `flush()` ([unit of work pattern](https://docs.sqlalchemy.org/en/20/glossary.html#term-unit-of-work))
+  + <mark>常設定為：True</mark>。原因：
+    + 不這麼做的話，資料庫與 ORM 實例容易產生不一致
++ `expire_on_commit` (預設 True)
+  + 說明
+    + `commit()` 後 session 中的所有 ORM 實例通通過期
+  + <mark>常設定為：False</mark>。原因：
+    + 一個非常普遍的情況是，我們在創建 user 後，，要回傳 user，此時如果設定為 `False`
+    + 我們選擇 `False`，所以要手動 `refresh()`
+
+### example
+```py=
+from contextlib import asynccontextmanager
+
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+from app.settings import get_settings
+from app.table import Base
+
+engine = create_async_engine(get_settings().SQLALCHEMY_DATABASE_URI, echo=True)
+AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
+
 
 @asynccontextmanager
-async def get_db():
-    async with async_session() as db:
-        async with db.begin():  # 自動 commit / rollback
-            yield db
+async def get_session():
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            yield session
 
+
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def drop_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+async def close_db():
+    await engine.dispose()
 ```
-```py
+```py=
 # 外面這樣寫
-with get_db() as db
+async with database.get_session() as session:
     user = User(...)
-    db.add(...)
-    await db.commit()
-    # ⚠️ 塞進資料庫後，id 欄位被自動補上，因此就產生了不一致
-    await db.refresh(user)
+    session.add(user)
+```
+```py=
+# FastAPI 範例
+@router.post(
+    "/users",
+    response_model=UserSchema.UserRead,
+    status_code=status.HTTP_201_CREATED,
+    response_description="成功建立使用者",
+    summary="建立使用者",
+)
+async def create_user(
+    user_data: UserSchema.UserCreate, 
+    session: Annotated[AsyncSession, Depends(get_session)]
+):
+    db_user = User(user_data)
+    session.add(db_user)
+    await session.flush()
+    await session.refresh(db_user)
+    return db_user
+
+# 執行路徑：
+# 1. yield 前 (transaction starts)
+# 2. session.add(db_user) (session 中新增使用者)
+# 3. session.flush() (將 session 變更刷新入資料庫)
+# (如果你的 ID 使用 autoincrement，此時資料庫會自動配給 ID)
+# 4. session.refresh(db_user)
+# (為了抓取這個 ID，我們必須重新 query 一遍資料庫，將資料刷新回 ORM 實例)
+# 5. yield 後 (transaction ends)
+
+# 🤔 個人意見：我覺得不要用 autoincrement 啦，用 UUID 吧！
 ```
 
-## SQLAlchemy 2.0
+## function
+
+### `text`
++ 直接執行 SQL
+  ```py=
+  from sqlalchemy import text
+
+  t = text("SELECT * FROM users")
+  result = connection.execute(t)
+  ```
+
+## 2.0-style query
 
 ### result
 + `scalars()`
@@ -65,15 +303,15 @@ with get_db() as db
 + `scalar()`
   > 返回單一結果
 
-### `select` / `where`
-```py
+### `select()` / `where()`
+```py=
 stmt = select(User).where(User.name == "Alice")
 result = await session.execute(stmt)
 user = result.scalars().first()
 ```
 
-### `insert` / `update` / `delete`
-```py
+### `insert()` / `update()` / `delete()`
+```py=
 from sqlalchemy import insert, update, delete
 
 # 新增
@@ -93,8 +331,8 @@ await session.commit()
 
 ```
 
-### `and_`
-```py
+### `and_()`
+```py=
 stmt = select(User).where(
     and_(
         User.age >= 18,
@@ -105,24 +343,24 @@ result = await session.execute(stmt)
 users = result.scalars().all()
 ```
 
-### `in`
-```py
+### `in()`
+```py=
 stmt = select(User).where(User.id.in_([1, 2, 3]))
 ```
 
-### `order_by`
+### `order_by()`
 ```py
 stmt = select(User).order_by(User.created_at.desc())
 ```
 
 ### `join`
-```py
+```py=
 stmt = select(User, Address).join(Address).where(User.id == Address.user_id)
 result = await session.execute(stmt)
 rows = result.all()  # 回傳 list[tuple(User, Address)]
 ```
 
-### `offset` / `limit`
-```py
+### `offset()` / `limit()`
+```py=
 stmt = select(User).offset(10).limit(20)  # 跳過 10 筆，取 20 筆
 ```
