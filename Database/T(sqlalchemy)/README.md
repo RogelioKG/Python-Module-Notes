@@ -47,7 +47,7 @@ Python 中存取資料庫的標準介面。\
 
 
 ### ORM object
-```py=
+```py
 # ORM 類別 (ORM class)
 class Employee(Base):
     __tablename__ = "employee"
@@ -59,7 +59,7 @@ class Employee(Base):
     salary: Mapped[int] = mapped_column(Integer, CheckConstraint("salary >= 0"))
     branch_id: Mapped[int] = mapped_column(ForeignKey("branch.id"), nullable=False)
 ```
-```py=
+```py
 # ORM 實例 (ORM object)
 Employee(
     emp_name="RogelioKG",
@@ -84,7 +84,7 @@ Employee(
     + 使用 `primary_key`：會先去 identity map 找，找不到才會去資料庫找
     + 使用非 `primary_key`：直接去資料庫找
     + 無論如何，找到的資料都會紀錄回 identity map 中 
-    ```py=
+    ```py
     u1 = session.get(User, 5)
     u2 = session.get(User, 5)
     assert u1 is u2
@@ -113,7 +113,7 @@ Employee(
 ### `expire()`
 + 讓指定的 ORM 實例過期 (清空它的所有屬性) 
 + 等到下次你要存取這個屬性時，再去資料庫 query 一遍
-  ```py=
+  ```py
   session.expire(u1)
   u1.some_attribute    # <-- lazy loads from the transaction
   ```
@@ -121,7 +121,7 @@ Employee(
 ### `refresh()`
 + 讓指定的 ORM 實例[過期](#expire)
 + 然後立即向資料庫 query 一遍，補足所有屬性
-  ```py=
+  ```py
   session.refresh(u1)  # <-- emits a SQL query
   u1.some_attribute    # <-- is refreshed from the transaction
   ```
@@ -139,7 +139,7 @@ Employee(
 ### `begin()`
 + 自動管理 `rollback()` 與 `commit()`
 + style: <mark>commit as you go</mark>
-  ```py=
+  ```py
   with Session(engine) as session:
       try:
           session.add(some_object)
@@ -151,7 +151,7 @@ Employee(
           session.commit()
   ```
 + style: <mark>begin once</mark>
-  ```py=
+  ```py
   # ✅ 此處開始一個 connection (lazy)
   with Session(engine) as session:
       # ✅ 此處開始一個 transaction
@@ -162,7 +162,7 @@ Employee(
   # 🟧 此處結束一個 connection
   ```
 + 這裡多補充一些關係，可看清它們背後管理的邏輯
-  ```py=
+  ```py
   # Note：Session(engine) 回傳 session
   # 其 __enter__() 回傳自身 (session)
   with Session(engine) as session:
@@ -178,7 +178,7 @@ Employee(
 ### `begin_nested()`
 + 即 SQL 中 `SAVEPOINT`：在 transaction 中還有個 nested transaction
 + 一旦發生 `rollback()`，只會回滾 nested transaction 的操作，不會回滾整個 transaction 的操作
-  ```py=
+  ```py
   Session = sessionmaker()
   with Session.begin() as session:
       session.add(u1)
@@ -212,7 +212,7 @@ Employee(
     + 我們選擇 `False`，所以要手動 `refresh()`
 
 ### example
-```py=
+```py
 from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -244,13 +244,13 @@ async def drop_db():
 async def close_db():
     await engine.dispose()
 ```
-```py=
+```py
 # 外面這樣寫
 async with database.get_session() as session:
     user = User(...)
     session.add(user)
 ```
-```py=
+```py
 # FastAPI 範例
 @router.post(
     "/users",
@@ -285,7 +285,7 @@ async def create_user(
 
 ### `create_engine()`
 
-```py=
+```py
 engine = create_engine(
     get_settings().database_uri,
     # connection pool 的 connection 數量 (預設 5)
@@ -301,7 +301,7 @@ engine = create_engine(
 
 ### `text`
 + 直接執行 SQL
-  ```py=
+  ```py
   from sqlalchemy import text
 
   t = text("SELECT * FROM users")
@@ -320,14 +320,14 @@ engine = create_engine(
   > 返回單一結果
 
 ### `select()` / `where()`
-```py=
+```py
 stmt = select(User).where(User.name == "Alice")
 result = await session.execute(stmt)
 user = result.scalars().first()
 ```
 
 ### `insert()` / `update()` / `delete()`
-```py=
+```py
 from sqlalchemy import insert, update, delete
 
 # 新增
@@ -348,7 +348,7 @@ await session.commit()
 ```
 
 ### `and_()`
-```py=
+```py
 stmt = select(User).where(
     and_(
         User.age >= 18,
@@ -360,7 +360,7 @@ users = result.scalars().all()
 ```
 
 ### `in()`
-```py=
+```py
 stmt = select(User).where(User.id.in_([1, 2, 3]))
 ```
 
@@ -370,13 +370,13 @@ stmt = select(User).order_by(User.created_at.desc())
 ```
 
 ### `join`
-```py=
+```py
 stmt = select(User, Address).join(Address).where(User.id == Address.user_id)
 result = await session.execute(stmt)
 rows = result.all()  # 回傳 list[tuple(User, Address)]
 ```
 
 ### `offset()` / `limit()`
-```py=
+```py
 stmt = select(User).offset(10).limit(20)  # 跳過 10 筆，取 20 筆
 ```
