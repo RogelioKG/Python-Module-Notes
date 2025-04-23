@@ -242,6 +242,7 @@ if __name__ == "__main__":
 ```
 
 ### `Self` 實例自身
++ [PEP-673](https://peps.python.org/pep-0673/)
 
 `set_scale` 回傳的是 `Shape`，\
 然而 `Shape` 並沒有 `set_radius` 方法。\
@@ -288,8 +289,7 @@ class Circle(Shape):
 
 Circle().set_scale(0.5).set_radius(2.7)  # => Circle
 ```
-3.11 後，有個更簡單的寫法 `Self`。\
-詳見 [PEP 673](https://peps.python.org/pep-0673/)。
+3.11 後有個更簡單的寫法 `Self`。
 ```py
 class Shape:
     def set_scale(self, scale: float) -> Self:
@@ -469,4 +469,23 @@ if __name__ == "__main__":
     managers = ImmutableList([Manager(i) for i in range(6, 11)])
     dump_employees(managers)
 
+```
+
+
+## Syntax
+
+### Type Parameter Syntax
+
++ [PEP 695](https://peps.python.org/pep-0695/) (2022/06/15)
++ 功能同 [TypeVar](#TypeVar-型別參數)，但這個寫法更直觀
+
+```py
+def func[T](a: T) -> T:
+    return a
+```
+
+```py
+class Stack[T]:
+    def __init__(self) -> None:
+        self._items: list[T] = []
 ```

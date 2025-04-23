@@ -32,23 +32,24 @@
 ### ✅ 相較於 pip 快<mark>數十倍</mark>的速度
 
   你以為 package manager 安裝套件的耗時，就是讓你去泡咖啡偷懶的時間嗎？\
-  噢不我的朋友，當你拿著你的杯子，準備離開電腦桌的時候，\
+  噢不我的朋友🤔，當你拿著你的杯子，準備離開電腦桌的時候，\
   uv 就已經以趕火車的速度，完成 dependency resolution 並 install 完畢。\
   想見識這個驚掉下巴的速度，詳見 [benchmark](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
 
 ## Note
 
-|📘 <span class="note">NOTE</span>|
+|☢️ <span class="warning">WARNING</span>|
 |:---|
-|此 package manager 仍在開發狀態，此筆記紀錄的是 version `0.6.10` (2025/03/25) 的功能|
+|此 package manager 仍在開發狀態！<br>此筆記紀錄的是 version <mark>`0.6.10`</mark> (2025/03/25) 的功能|
 
 |📘 <span class="note">NOTE</span>|
 |:---|
-|此 package manager 的 lockfile 為 `uv.lock`|
+|此 package manager 的 <mark>lockfile 為 `uv.lock`</mark>|
+|[PEP 751](https://peps.python.org/pep-0751/) (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`，<br>這個小傢伙應該還需要一點時間，來發展成廣泛使用的 lockfile。 |
 
 |📘 <span class="note">NOTE</span>|
 |:---|
-|uv 預設使用 hardlink (連到快取) 安裝<br />(某一天筆者不小心跨槽安裝，結果發現跳警告，意外發現這個事實)|
+|uv 預設使用 hardlink 安裝 (連結到 local cache)|
 
 |🚨 <span class="caution">CAUTION</span>|
 |:---|
@@ -273,7 +274,7 @@
 
   `uv build` + `uv publish`，就這麼簡單。唯 publish 時須注意兩點：
   1. 發布到不同套件源 (比如 testpypi)
-      > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index-套件源))。
+      > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index：指定套件源))。
   2. 會問你 username 和 password，但現已改成使用 API token 登入
       > 因此 username 你要輸入 `__token__`，password 再輸入 API token 即可。
 
@@ -301,7 +302,7 @@
 ### `pip`：相容 pip 介面
   ...
 
-### `generate-shell-completion` 自訂指令自動補全
+### `generate-shell-completion` 指令自動補全
 
 + PowerShell：放在 `$PROFILE` (腳本)
 + Bash：放在 `~/.bashrc` (腳本)
@@ -356,9 +357,6 @@
 ```
 uv add ruff --group dev
 ```
-
-
-### 
 
 ## Others
 

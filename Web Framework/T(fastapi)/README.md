@@ -34,10 +34,13 @@
     │   ├── base.py
     │   ├── item.py
     │   └── user.py
-    └── schemas          # SQLAlchemy Table
+    ├── schemas          # SQLAlchemy Table
+    │   ├── __init__.py
+    │   ├── items.py
+    │   └── users.py
+    └── internal         # 內部業務邏輯
         ├── __init__.py
-        ├── items.py
-        └── users.py
+        └── ...
 ```
 
 ## API document
@@ -61,7 +64,7 @@
 ## Uvicorn
 + `--reload`：開啟 hot reload
   ```bash
-  uvicorn <entry_point_script>:<app_object_name> --host <host> --port <port>
+  uvicorn <app_script>:<app_object_name> --host <host> --port <port>
   ```
 
 ## Async
@@ -169,7 +172,7 @@
   # PostgreSQL
   POSTGRES_DATABASE_URI="postgresql+aiomysql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
   ```
-### 幻想的破滅
+### async v.s. sync
 + 配置
   + engine 與 workers 皆採預設
 + 測試工具：[locust](https://locust.io/)

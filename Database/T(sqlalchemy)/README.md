@@ -92,18 +92,21 @@ Employee(
     ![](https://martinfowler.com/eaaCatalog/index/idMapperSketch.gif)
 
 ### `add()` / `add_all()`
-+ <mark>這是針對 session 的變更</mark>
-+ session 加入新的 ORM 實例
++ <mark>這是 session 的變更</mark>
++ session 將指定 ORM 實例標記為新增狀態
++ 等到此變更被寫進資料庫 (比如 `flush`)，才會出現在 identity map
 
 ### `delete()`
-+ <mark>這是針對 session 的變更</mark>
-+ session 將某 ORM 實例標記為刪除狀態
++ <mark>這是 session 的變更</mark>
++ session 將指定 ORM 實例標記為刪除狀態
++ 等到此變更被寫進資料庫 (比如 `flush`)，才會出現在 identity map
 
 ### `get()`
 + 先去 identity map 找資料，找不到再去資料庫 query 資料
 
 ### `execute()`
 + 直接去資料庫 query 資料
++ 搭配 [2.0-style query](#20-style-query) 寫法或 [`text()`](#text) 寫法
 
 ### `flush()`
 + 將 session 的變更「暫時」寫回資料庫
@@ -196,7 +199,7 @@ Employee(
 + 此時 ORM 實例處於 detach 狀態
 
 ### `close()`
-+ 將 connection 歸還給 connection pool
++ session 將 connection 歸還給 engine 的 connection pool
 
 ### `sessionmaker()`
 + `autoflush` (預設 True)
@@ -208,78 +211,81 @@ Employee(
   + 說明
     + `commit()` 後 session 中的所有 ORM 實例通通過期
   + <mark>常設定為：False</mark>。原因：
-    + 一個非常普遍的情況是，我們在創建 user 後，，要回傳 user，此時如果設定為 `False`
-    + 我們選擇 `False`，所以要手動 `refresh()`
+    + 若在結束 session 後還要用到這些資料，這會是非常重要的優化
+    + 我們選擇 `False`
+      + 若你的 ORM 實例在塞進資料庫時，有產生新的欄位，請記得手動 `refresh()`
 
 ### example
-```py
-from contextlib import asynccontextmanager
++ sync
+  ```py
+  from sqlalchemy import create_engine
+  from sqlalchemy.orm import sessionmaker
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+  from config import get_settings
+  from models.base import Base
+  from models.item import Item
+  from models.user import User
 
-from app.settings import get_settings
-from app.table import Base
+  engine = create_engine(get_settings().database_uri)
 
-engine = create_async_engine(get_settings().SQLALCHEMY_DATABASE_URI, echo=True)
-AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
-
-
-@asynccontextmanager
-async def get_session():
-    async with AsyncSessionLocal() as session:
-        async with session.begin():
-            yield session
+  SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+  def get_session():
+      session = SessionLocal()
+      try:
+          yield session
+      finally:
+          session.close()
 
 
-async def drop_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+  def init_db():
+      Base.metadata.create_all(bind=engine, tables=[User.__table__, Item.__table__])
+  ```
+  ```py
+  session = database.get_session()
+  user = User(...)
+  session.add(user)
+  session.commit()
+  ```
++ async
+  ```py
+  from contextlib import asynccontextmanager
+
+  from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+  from app.settings import get_settings
+  from app.table import Base
+
+  engine = create_async_engine(get_settings().SQLALCHEMY_DATABASE_URI, echo=True)
+  AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-async def close_db():
-    await engine.dispose()
-```
-```py
-# 外面這樣寫
-async with database.get_session() as session:
-    user = User(...)
-    session.add(user)
-```
-```py
-# FastAPI 範例
-@router.post(
-    "/users",
-    response_model=UserSchema.UserRead,
-    status_code=status.HTTP_201_CREATED,
-    response_description="成功建立使用者",
-    summary="建立使用者",
-)
-async def create_user(
-    user_data: UserSchema.UserCreate, 
-    session: Annotated[AsyncSession, Depends(get_session)]
-):
-    db_user = User(user_data)
-    session.add(db_user)
-    await session.flush()
-    await session.refresh(db_user)
-    return db_user
+  @asynccontextmanager
+  async def get_session():
+      async with AsyncSessionLocal() as session:
+          async with session.begin():
+              yield session
 
-# 執行路徑：
-# 1. yield 前 (transaction starts)
-# 2. session.add(db_user) (session 中新增使用者)
-# 3. session.flush() (將 session 變更刷新入資料庫)
-# (如果你的 ID 使用 autoincrement，此時資料庫會自動配給 ID)
-# 4. session.refresh(db_user)
-# (為了抓取這個 ID，我們必須重新 query 一遍資料庫，將資料刷新回 ORM 實例)
-# 5. yield 後 (transaction ends)
 
-# 🤔 個人意見：不要用 autoincrement 啦，用 UUID 吧！
-```
+  async def init_db():
+      async with engine.begin() as conn:
+          await conn.run_sync(Base.metadata.create_all)
+
+
+  async def drop_db():
+      async with engine.begin() as conn:
+          await conn.run_sync(Base.metadata.drop_all)
+
+
+  async def close_db():
+      await engine.dispose()
+  ```
+  ```py
+  async with database.get_session() as session:
+      user = User(...)
+      session.add(user)
+  ```
 
 ## function
 
@@ -299,7 +305,7 @@ engine = create_engine(
 )
 ```
 
-### `text`
+### `text()`
 + 直接執行 SQL
   ```py
   from sqlalchemy import text
@@ -379,4 +385,54 @@ rows = result.all()  # 回傳 list[tuple(User, Address)]
 ### `offset()` / `limit()`
 ```py
 stmt = select(User).offset(10).limit(20)  # 跳過 10 筆，取 20 筆
+```
+
+## Cool
+
+酷東西分享地
+
+### `enable_repr`
+
+```py
+def enable_repr[T](
+    cls: type[T] | None = None, *, sensitive: set[str] | None = None
+) -> type[T] | Callable[[type[T]], type[T]]:
+    """自動為每個 SQLAlchemy Model 提供 `__repr__` 方法，並屏蔽敏感欄位
+
+    Example
+    -------
+    >>> @enable_repr(sensitive={"password", "email"})
+    ... class User(Base):
+    ...     __tablename__ = "User"
+    ...     id = mapped_column(Integer, primary_key=True)
+    ...     username = mapped_column(String(50))
+    ...     email = mapped_column(String(100))
+    ...     password = mapped_column(String(100))
+    >>> user = User(id=1, username="john", email="john@example.com", password="123")
+    >>> print(user)
+    User(id=1, username='john', email=***, password=***)
+    """
+
+    if sensitive is None:
+        sensitive = set()
+
+    def wrapper(cls_: type[T]) -> type[T]:
+        cls_._sensitive = sensitive
+
+        def __repr__(self) -> str:
+            columns = class_mapper(self.__class__).columns.keys()
+            repr_dict = {}
+            for col in columns:
+                value = getattr(self, col)
+                if col in self.__class__._sensitive:
+                    repr_dict[col] = "***"
+                else:
+                    repr_dict[col] = repr(value)
+            repr_data = ", ".join(f"{k}={v}" for k, v in repr_dict.items())
+            return f"{self.__class__.__name__}({repr_data})"
+
+        cls_.__repr__ = __repr__
+        return cls_
+
+    return wrapper if cls is None else wrapper(cls)
 ```
