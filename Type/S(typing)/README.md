@@ -5,6 +5,7 @@
 ## References
 + 🔗 [**好豪 - Python Type Hints 教學：我犯過的 3 個菜鳥錯誤**](https://haosquare.com/python-type-hints-3-beginner-mistakes/)
 + 🔗 [**MyApollo - Python 的 typing.Protocol 怎麼使用？**](https://myapollo.com.tw/blog/python-typing-protocol/)
++ 📜 [**Python Typing Documentation**](https://typing.python.org/en/latest/index.html)
 
 ## Note
 |🚨 <span class="caution">CAUTION</span>|
@@ -19,7 +20,7 @@
 
 | 📗 <span class="tip">TIP</span> |
 | :-------- |
-| 若標註型態是 `float`，接受型態是 `int`，mypy 還是會讓你過的。<br />因為 `int` ⊂ `float` ⊂ `complex`，所以不用刻意去寫 <code>int &#124; float</code>。<br />詳見 [PEP 3141 – A Type Hierarchy for Numbers](https://peps.python.org/pep-3141/)。 |
+| 若標註型態是 `float`，接受型態是 `int`，mypy 還是會讓你過的。<br />因為 `int` ⊂ `float` ⊂ `complex`，所以不用刻意去寫 <code>int &#124; float</code>。<br />詳見 [PEP-3141] – A Type Hierarchy for Numbers。 |
 
 ```py
 x: float
@@ -62,7 +63,7 @@ assert Point2D(x=1, y=2, label="first") == dict(x=1, y=2, label="first")
 
 ### `Annotated` 註釋
 型別標註的額外資訊，其可被 `inspect` 標準庫中的黑魔法 `signature()` 提煉出來。
-常被靜態型別檢查器、第三方函式庫等利用。
+常被 static type checker、第三方函式庫等利用。
 + [Pydantic - Validator](https://docs.pydantic.dev/latest/concepts/validators/#__tabbed_1_1)
 + [FastAPI - Depends](https://fastapi.tiangolo.com/tutorial/dependencies/#import-depends)
 ```py
@@ -199,7 +200,7 @@ if __name__ == "__main__":
     print(longest("1234567", "123"))
     print(longest(b"1234567", b"123"))
     # 錯誤範例
-    # (這裡型別是 list[int] 就錯了，雖然可正常運行，但 mypy 靜態型別檢查器會檢查出來)
+    # (這裡型別是 list[int] 就錯了，雖然可正常運行，但 mypy 等 static type checker 會檢查出來)
     print(longest([1, 2, 3, 4, 5, 6, 7], [1, 2, 3]))
 ```
 
@@ -242,11 +243,11 @@ if __name__ == "__main__":
 ```
 
 ### `Self` 實例自身
-+ [PEP-673](https://peps.python.org/pep-0673/)
+[PEP-673]
 
 `set_scale` 回傳的是 `Shape`，\
 然而 `Shape` 並沒有 `set_radius` 方法。\
-靜態型別檢查器會報錯。
+static type checker 會報錯。
 ```py
 from __future__ import annotations
 
@@ -289,7 +290,7 @@ class Circle(Shape):
 
 Circle().set_scale(0.5).set_radius(2.7)  # => Circle
 ```
-3.11 後有個更簡單的寫法 `Self`。
+3.11 後有個更簡單的寫法 `Self`
 ```py
 class Shape:
     def set_scale(self, scale: float) -> Self:
@@ -310,7 +311,7 @@ Circle().set_scale(0.5).set_radius(2.7)
 
 協議是 Duck Typing 的體現。\
 它允許你在不使用繼承的情況下達成多型，\
-這<mark>可被靜態型別檢查器 (如 mypy) 檢查出</mark>。
+這<mark>可被 static type checker (如 mypy) 檢查出</mark>。
 
 一言以蔽之：\
 繼承是<mark>名義性的 (nominal)</mark>、<mark>侵入性的</mark>，\
@@ -455,7 +456,7 @@ class Manager(Employee):
         return f"Manager(id:{self.id})"
 
 
-# 使用 mypy 靜態型別檢查器時
+# 使用 mypy 等 static type checker 時
 # 若此處傳入 ImmutableList[Manager] 會出錯
 # 因為 ImmutableList[Manager] is not a ImmutableList[Employee]
 def dump_employees(employees: ImmutableList[Employee]) -> None:
@@ -474,18 +475,128 @@ if __name__ == "__main__":
 
 ## Syntax
 
+### Variadic Generics
++ [PEP-646] (2020/09/16)
++ `Unpack` (舊式寫法)
+  ```py
+  from typing import TypedDict, TypeVar, TypeVarTuple, Unpack
+
+  T = TypeVar("T")
+  Ts = TypeVarTuple("Ts")
+
+  def prepend(element: T, collection: tuple[Unpack[Ts]]) -> tuple[T, Unpack[Ts]]:
+      return (element, *collection)
+
+  z = prepend(element=0, collection=(True, "a"))
+  # z: tuple[int, bool, str]
+  ```
+  對於 `TypedDict` 提供的 IDE 提示特別好用
+  ```py
+  class UserInfo(TypedDict):
+      name: str
+      age: int
+
+  def print_user_info(**kwargs: Unpack[UserInfo]) -> None:
+      print(f"Name: {kwargs['name']}, Age: {kwargs['age']}")
+
+  # 提示：(*, name: str, age: int) -> None
+  print_user_info(name="Alice", age=30)
+  ```
++ `*` (新式寫法，3.12)
+  ```py
+  def prepend[T, *Ts](element: T, collection: tuple[*Ts]) -> tuple[T, *Ts]:
+      return (element, *collection)
+
+  z = prepend(element=0, collection=(True, "a"))
+  # z: tuple[int, bool, str]
+  ```
++ ⚠️ PEP-646 [嚴禁 Type Parameter 中出現多個 Variadic Generics](https://peps.python.org/pep-0646/#multiple-type-variable-tuples-not-allowed)
+  > 理由是因為無法去確認其中每個元素具體屬於哪個 Variadic Generic
+  ```py
+  class Array[*Ts1, *Ts2]:
+      def test(self, n: tuple[*Ts1]):
+          return n
+
+  x: Array[int, str, bool] = Array()
+  # 那這樣 Ts1 是 [int]、[int, str] 還是 [int, str, bool]？
+  x.test(2)
+  x.test(2, "3", True)
+  ```
+
+### User-Defined Type Guards
++ [PEP-647] (2020/10/07)
++ 基本上類似 TypeScript 的 typeguard
++ `TypeGuard`
+  ```py
+  def is_str_list(val: list[object]) -> TypeGuard[list[str]]:
+      return all(isinstance(x, str) for x in val)
+
+
+  def func1(val: list[object]):
+      if is_str_list(val):
+          # val 被判斷成 list[str]
+          print(" ".join(val))
+      else:
+          # val 被判斷成 list[object]
+          print(f"{val} Not a list of strings!")
+  ```
+
 ### Type Parameter Syntax
 
-+ [PEP 695](https://peps.python.org/pep-0695/) (2022/06/15)
++ [PEP-695] (2022/06/15)
 + 功能同 [TypeVar](#TypeVar-型別參數)，但這個寫法更直觀
++ `[?]` 新式寫法 (3.12)
+  ```py
+  def func[T](a: T) -> T:
+      return a
+  ```
+  ```py
+  class Stack[T]:
+      def __init__(self) -> None:
+          self._items: list[T] = []
+  ```
+  ```py
+  class Matrix[A, B]:
+      def multiply[C](self, other: "Matrix[B, C]") -> "Matrix[A, C]": ...
 
-```py
-def func[T](a: T) -> T:
-    return a
-```
+  x: Matrix[Literal[30], Literal[20]] = ...
+  y: Matrix[Literal[20], Literal[50]] = ...
+  
+  z = x.multiply(y)
+  # z: Matrix[Literal[30], Literal[50]]
+  ```
++ `ParamSpec` 舊式寫法
+  > 表示函式參數列的型別
+  ```py
+  from collections.abc import Callable
+  from typing import ParamSpec, TypeVar
 
-```py
-class Stack[T]:
-    def __init__(self) -> None:
-        self._items: list[T] = []
-```
+  P = ParamSpec("P")
+  R = TypeVar("R")
+
+  def apply(func: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+      return func(*args, **kwargs)
+
+  def func(a: str, b: str, *, m: int) -> str:
+      return (a + b) * m
+
+  result = apply(func, "a", "b", m=5)  # result 被判定為 str
+  ```
++ `**` 新式寫法 (3.12)
+  ```py
+  from collections.abc import Callable
+
+  def apply[**P, R](func: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+      return func(*args, **kwargs)
+
+  def func(a: str, b: str, *, m: int) -> str:
+      return (a + b) * m
+
+  result = apply(func, "a", "b", m=5)  # result 被判定為 str
+  ```
+
+[PEP-646]: https://peps.python.org/pep-0646/
+[PEP-647]: https://peps.python.org/pep-0647/
+[PEP-673]: https://peps.python.org/pep-0673/
+[PEP-695]: https://peps.python.org/pep-0695/
+[PEP-3141]: https://peps.python.org/pep-3141/

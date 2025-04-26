@@ -50,15 +50,108 @@
 
 ## Usage
 
-### `@app.HTTP_METHOD(...)`：API 端點
+
+### `Depends`
++ 依賴注入
+  ```py
+  async def common_params(skip: int = 0, limit: int = 100):
+      return {"skip": skip, "limit": limit}
+
+  @app.get("/items/")
+  async def read_items(commons: Annotated[dict, Depends(common_params)]):
+      return commons
+  ```
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |只能用於 API endpoint 的 handle funtion 內的 `Annotated` 註釋<br>（想必是在 app decorator 做了一些處理，詳見 [Annotated 黑魔法](https://hackmd.io/@RogelioKG/pythons_flying_circus/%2F%40RogelioKG%2Ftyping#Annotated-%E8%A8%BB%E9%87%8B)）。|
+  |當然你也能用三方庫 [fastapi-injectable](https://github.com/JasperSui/fastapi-injectable) 的 `@injectable`，<br>讓它脫離 app decorator 也能運作。|
+
+  |📗 <span class="tip">TIP</span>|
+  |:---|
+  |`Annotated[Type, Depends()]` 等價於 `Annotated[Type, Depends(Type)]`|
+  |也就是說當給定 `None` 時，自動帶入前方型態|
+
++ <mark>隔山打牛</mark> (對於一時不可見的依賴，會自動往外去尋找)
+  ```py
+  def get_double(n: int) -> int:
+      return n * 2
+
+  # 在 /test?n=2 時，會回傳 4 🚩
+  # 注意：n 可以不用明確寫在參數裡 (太神奇了我的傑克🪄)
+  @app.post("/test")
+  async def test(doubled_number: Annotated[int, Depends(get_double)]):
+      return doubled_number
+  ```
+
+### `Query`
+
+```py
+@app.get("/items") # 讀取 request 中 query 的 numbers 參數
+def read_items(numbers):
+    return {"numbers": numbers}
+```
+
+### `Cookie`
+[Cookie - Samesite settings](https://medium.com/%E7%A8%8B%E5%BC%8F%E7%8C%BF%E5%90%83%E9%A6%99%E8%95%89/%E5%86%8D%E6%8E%A2%E5%90%8C%E6%BA%90%E6%94%BF%E7%AD%96-%E8%AB%87-samesite-%E8%A8%AD%E5%AE%9A%E5%B0%8D-cookie-%E7%9A%84%E5%BD%B1%E9%9F%BF%E8%88%87%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85-6195d10d4441)
+
+```py
+@app.get("/login") # 設定 cookie "token"
+def login(response: Response):
+    response.set_cookie(key="token", value="my-secret", httponly=True)
+    return {"message": "logged in"}
+
+@app.get("/logout") # 刪除 cookie "token"
+def logout(response: Response):
+    response.delete_cookie(key="token")
+    return {"message": "logged out"}
+
+@app.get("/profile") # 讀取 request 中的 cookie "token"
+def profile(token: Annotated[str, Cookie()]):
+    if token != "my-secret":
+        return {"error": "unauthorized"}
+    return {"message": "Welcome back!"}
+```
+
+### `Header`
+```py
+@app.get("/read-header") # 讀取 request 中 header 的 User-Agent 欄位
+def read_header(user_agent: Annotated[str | None, Header()] = None):
+    return {"User-Agent": user_agent}
+```
+
+### `Form`
+```py
+class FormData(BaseModel):
+    username: str
+    password: str
+    model_config = {"extra": "forbid"}  # 不允許出現其他欄位
+
+# Form 的 media_type 選項
+# 預設使用 application/x-www-form-urlencode
+# 也可指定 multipart/form-data
+@app.post("/test/")
+async def test(data: Annotated[FormData, Form()]):
+    return data
+```
+
+### `@app.HTTP_METHOD(...)`
 + `response_model=`：response 採用的 schema
 + `deprecated=`：棄用
++ `dependencies=`：先行依賴
+  ```py
+  def get_double(n: int) -> int:
+      return n * 2
 
-### `Depends` 依賴注入
-|🚨 <span class="caution">CAUTION</span>|
-|:---|
-|只能用於 API endpoint 的 handle funtion，並且必須是 `Annotated` 的註釋<br>（想必是在 app decorator 做了一些處理，詳見 [Annotated 黑魔法](https://hackmd.io/@RogelioKG/pythons_flying_circus/%2F%40RogelioKG%2Ftyping#Annotated-%E8%A8%BB%E9%87%8B)）。|
-|當然你也能用三方庫 [fastapi-injectable](https://github.com/JasperSui/fastapi-injectable) 的 `@injectable` 讓它脫離 app decorator 也能運作。|
+  def verify_even(n: int) -> None:
+      if n % 2 == 1:
+          raise ValueError("Odd value!")
+
+  # 在 /test?n=2 時，先檢查是不是偶數，再來回傳 4 🚩
+  # 在 /test?n=5 時，先檢查是不是偶數，然後就爆炸了
+  @app.post("/test", dependencies=[Depends(verify_even)])
+  async def test(doubled_number: Annotated[int, Depends(get_double)]):
+      return doubled_number
+  ```
 
 
 ## Uvicorn
@@ -172,23 +265,130 @@
   # PostgreSQL
   POSTGRES_DATABASE_URI="postgresql+aiomysql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
   ```
-### async v.s. sync
-+ 配置
-  + engine 與 workers 皆採預設
-+ 測試工具：[locust](https://locust.io/)
-  + peak concurrency; 100
-  + ramp up: 10
-+ 測試結果
 
-  可以看到實際上<mark>異步版本反而 overhead 很重</mark>。\
-  我覺得就現實面來看，還是要考量：
-  1. 應用是否符合 I/O 密集（比如需要到某處 fetch 資料很久）
-  2. 應用是否有高 concurrency 需求（比如網站流量超大）
+## Unit Testing
++ `pytest`
++ `pytest-mock`
++ `pytest-asyncio`
 
-  + sync
-    ![](https://hackmd.io/_uploads/r1ZZcG4kxg.png)
-  + async
-    ![](https://hackmd.io/_uploads/r1bWcM4kgx.png)
+## OAuth 2.0
+
++ <mark>使用 [JWT](https://kucw.io/blog/jwt/) 最簡實作 OAuth 2.0 授權流程</mark>
+  ```py
+  from datetime import UTC, datetime, timedelta
+  from typing import Annotated, Any, Literal
+
+  from fastapi import Depends, FastAPI, HTTPException
+  from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+  from jose import jwt
+
+  app = FastAPI()
+
+  # 自動從 request 的 authorization header 拿取 bearer token
+  OAuth2Token = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="login"))]
+  # 自動從 request 抓取登入資訊 (username 與 password 欄位，此為 OAuth 2.0 規定)
+  LoginForm = Annotated[OAuth2PasswordRequestForm, Depends()]
+
+
+  def generate_token(
+      payload: dict[str, Any],
+      secret: str,
+      *,
+      usage: Literal["access", "refresh"],
+  ):
+      expire_time_dict = {"access": 30, "refresh": 60}  # 幾秒後過期
+      token_expire_time = datetime.now(UTC) + timedelta(seconds=expire_time_dict[usage])
+      token_payload = {
+          **payload,
+          "exp": token_expire_time,  # 指定過期時間
+          "usage": usage,  # 指定用途
+      }
+      token = jwt.encode(token_payload, secret)
+      return token
+
+
+  def verify_user(payload: dict[str, Any]) -> None:
+      _user_id = payload.get("id")
+      _email = payload.get("sub")
+      if _user_id != 5 or _email != "rogelio@example.com":
+          raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+  # * 登入路由，獲取 token 用
+  @app.post("/login")
+  def login(form_data: LoginForm):
+      if form_data.username != "RogelioKG" or form_data.password != "123456":
+          raise HTTPException(status_code=401, detail="Invalid credentials")
+
+      secret = "my-secret"
+      payload = {
+          "sub": "rogelio@example.com",
+          "id": 5,
+      }
+
+      access_token = generate_token(payload, secret, usage="access")
+      refresh_token = generate_token(payload, secret, usage="refresh")
+
+      return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+  # * 刷新路由，獲取新的 token 用
+  @app.post("/refresh")
+  def refresh(token: OAuth2Token):
+      secret = "my-secret"
+      payload = jwt.decode(token, secret)
+      verify_user(payload)
+      assert payload.get("usage") == "refresh"  # ! 只能使用 refresh_token 來 refresh
+
+      access_token = generate_token(payload, secret, usage="access")
+      refresh_token = generate_token(payload, secret, usage="refresh")
+
+      return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+  # * 私人路由，獲取 private resources 用
+  @app.get("/profile")
+  def profile(token: OAuth2Token):
+      secret = "my-secret"
+      payload = jwt.decode(token, secret)
+      verify_user(payload)
+      assert payload.get("usage") == "access"  # ! 只能使用 access_token 來 access
+
+      return {"message": "Welcome back!"}
+  ```
+
+
++ `OAuth2PasswordBearer`
+  + 名稱意義：使用者要以密碼換取 token
+  + 呼叫時，就會從 request 的 authorization header 拿取 bearer token
+    ```py
+    # 實作
+    class OAuth2PasswordBearer(OAuth2):
+        ...
+        # 所以當你依賴注入時，最後回傳的其實是字串 (token)
+        async def __call__(self, request: Request) -> Optional[str]:
+            authorization = request.headers.get("Authorization")
+            scheme, param = get_authorization_scheme_param(authorization)
+            if not authorization or scheme.lower() != "bearer":
+                if self.auto_error:
+                    raise HTTPException(
+                        status_code=HTTP_401_UNAUTHORIZED,
+                        detail="Not authenticated",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+                else:
+                    return None
+            return param
+    ```
++ `OAuth2PasswordRequestForm`
+  + request 嚴格要求：
+    + 一定要用 POST
+    + body 一定要用 x-www-form-urlencoded 格式
+
++ PostMan 測試
+  ![](https://hackmd.io/_uploads/HJWMDcv1xg.png)
+
+
 
 ## Docker
 
