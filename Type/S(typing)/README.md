@@ -361,14 +361,79 @@ class Car():
 ```
 
 ### `overload` 函數多載
-```py
-@overload
-def utf8(value: None) -> None: ...
-@overload
-def utf8(value: bytes) -> bytes: ...
-@overload
-def utf8(value: str) -> bytes: ...
-```
++ 範例
+  ```py
+  @overload
+  def utf8(value: bytes) -> bytes: ...
+  @overload
+  def utf8(value: str) -> bytes: ...
+  # 實作
+  def utf8(value: str | bytes) -> str | bytes:
+      pass
+  ```
++ 用途
+  > 可看到實作處的型別是混雜的，若你想為不同簽名的函式做出不同實作，你要自己比對型別 (`isinstance`)。假如<mark>函式因不同參數簽名回傳不同型態</mark>，使用 `@overload` 能有效地告訴 static type checker，當傳入某某參數時，回傳型態是甚麼？
+  ```py
+  @overload
+  def enable_repr[T](
+      cls: None,
+      *,
+      sensitive: set[str] | None = None,
+  ) -> Callable[[type[T]], type[T]]: ...
+
+
+  @overload
+  def enable_repr[T](
+      cls: type[T],
+      *,
+      sensitive: set[str] | None = None,
+  ) -> type[T]: ...
+
+
+  def enable_repr[T](
+      cls: type[T] | None = None,
+      *,
+      sensitive: set[str] | None = None,
+  ) -> Callable[[type[T]], type[T]] | type[T]:
+      """自動為每個 SQLAlchemy Model 提供 `__repr__` 方法，並屏蔽敏感欄位
+
+      Example
+      -------
+      >>> @enable_repr(sensitive={"password", "email"})
+      ... class User(Base):
+      ...     __tablename__ = "User"
+      ...     id = mapped_column(Integer, primary_key=True)
+      ...     username = mapped_column(String(50))
+      ...     email = mapped_column(String(100))
+      ...     password = mapped_column(String(100))
+      >>> user = User(id=1, username="john", email="john@example.com", password="123")
+      >>> print(user)
+      User(id=1, username='john', email=***, password=***)
+      """
+
+      if sensitive is None:
+          sensitive = set()
+
+      def wrapper(cls_: type[T]) -> type[T]:
+          setattr(cls_, "_sensitive", sensitive)  # noqa: B010
+
+          def __repr__(self) -> str:
+              columns = class_mapper(self.__class__).columns.keys()
+              repr_dict = {}
+              for col in columns:
+                  value = getattr(self, col)
+                  if col in self.__class__._sensitive:
+                      repr_dict[col] = "***"
+                  else:
+                      repr_dict[col] = repr(value)
+              repr_data = ", ".join(f"{k}={v}" for k, v in repr_dict.items())
+              return f"{self.__class__.__name__}({repr_data})"
+
+          cls_.__repr__ = __repr__
+          return cls_
+
+      return wrapper if cls is None else wrapper(cls)
+  ```
 
 ### `get_origin`
 ```py
@@ -566,33 +631,42 @@ if __name__ == "__main__":
   # z: Matrix[Literal[30], Literal[50]]
   ```
 + `ParamSpec` 舊式寫法
-  > 表示函式參數列的型別
+  > 表示函式的參數簽名的型別。其出現是為了避免 closure 屏蔽掉回傳型別。
   ```py
-  from collections.abc import Callable
-  from typing import ParamSpec, TypeVar
+  from typing import Callable, TypeVar, ParamSpec
 
-  P = ParamSpec("P")
-  R = TypeVar("R")
+  P = ParamSpec('P')
+  R = TypeVar('R')
 
-  def apply(func: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-      return func(*args, **kwargs)
+  def to_str(func: Callable[P, R]) -> Callable[P, str]:
+      def wrapper(*args: P.args, **kwargs: P.kwargs) -> str:
+          result = func(*args, **kwargs)
+          return str(result)
+      return wrapper
 
-  def func(a: str, b: str, *, m: int) -> str:
-      return (a + b) * m
+  @to_str
+  def multiply(a: int, b: int) -> int:
+      return a * b
 
-  result = apply(func, "a", "b", m=5)  # result 被判定為 str
+  a = multiply(3, 2)
+  # a 可被正確的判定成 str 型別 (以往會誤判成 int)
   ```
 + `**` 新式寫法 (3.12)
   ```py
-  from collections.abc import Callable
+  from typing import Callable
 
-  def apply[**P, R](func: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-      return func(*args, **kwargs)
+  def to_str[**P, R](func: Callable[P, R]) -> Callable[P, str]:
+      def wrapper(*args: P.args, **kwargs: P.kwargs) -> str:
+          result = func(*args, **kwargs)
+          return str(result)
+      return wrapper
 
-  def func(a: str, b: str, *, m: int) -> str:
-      return (a + b) * m
+  @to_str
+  def multiply(a: int, b: int) -> int:
+      return a * b
 
-  result = apply(func, "a", "b", m=5)  # result 被判定為 str
+  a = multiply(3, 2)
+  # a 可被正確的判定成 str 型別 (以往會誤判成 int)
   ```
 
 [PEP-646]: https://peps.python.org/pep-0646/
