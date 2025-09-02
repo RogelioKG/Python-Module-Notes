@@ -13,7 +13,7 @@
 
 ## Class
 
-### [`ndarray`](https://www.delftstack.com/zh-tw/tutorial/python-numpy/numpy-ndarray/)
+### 陣列 [`ndarray`](https://www.delftstack.com/zh-tw/tutorial/python-numpy/numpy-ndarray/)
 
 + 索引方式
   ```py
