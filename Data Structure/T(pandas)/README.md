@@ -133,20 +133,18 @@ print(df.loc[df["value"] < 11])
   ser.sum()       # 加總
   
   # 方法 - 映射
-  ser.map()       # 映射 (給【dict】)
+  ser.map()       # 映射 (字典)
                       # - 範例：pd.Series(['cat', 'dog', 'bird']).map({'cat': '貓', 'dog': '狗'})
-                      # - 翻譯：cat 變貓，dog 變狗
 
-  ser.apply()     # 映射 (給【自訂函數】)
+  ser.apply()     # 映射 (函數)
                       # - 範例：pd.Series([1, 2, 3, 4]).apply(lambda x: x ** 2)
-                      # - 翻譯：對每個元素平方
   ```
 
 ### `pd.DataFrame()`
 
 + 參數
   ```
-  data    : 多欄資料 (✅字典，key 為欄索引名稱、value 為一欄資料；矩陣，每列即一列資料)
+  data    : 多欄資料 (字典，key 為欄索引名稱、value 為一欄資料；矩陣，每列即一列資料)
   index   : 每列索引名稱 (預設：列舉)
   columns : 每欄索引名稱 (預設：列舉)
   dtype   : 資料型態
@@ -179,9 +177,9 @@ print(df.loc[df["value"] < 11])
   # 3        7        8       -4
 
   # 新增一列資料
-  data2 = [[7, 8]]                               # ⚠️須為矩陣
+  data2 = [[7, 8]]                               # ⚠️ 須為矩陣
   df2 = pd.DataFrame(data2, columns=df1.columns) # df2 欄索引同 df1
-  df1 = pd.concat([df1, df2], ignore_index=True) # ⚠️須為列表，忽略 df2 原有列索引，串接
+  df1 = pd.concat([df1, df2], ignore_index=True) # ⚠️ 須為列表，忽略 df2 原有列索引，串接
   #    Column1  Column2
   # 0        1        2
   # 1        3        4
@@ -250,12 +248,13 @@ print(df.loc[df["value"] < 11])
   df.value_counts()    # 計數後排序
 
   # 方法 - 映射
-  df.apply(axis=)      # 映射 (給【自訂函數】)
-                       # - 說明：類似 Series.apply
-  df.transform(axis=)  # 映射 (給【聚合函數】)
-                       # - 說明：類似 SeriesGroupBy.transform
-  df.applymap(axis=)   # 映射 (給【自訂函數】)
-                       # - 說明：把所有資料格瞎七八套上你的自訂函數
+  df.apply(axis=)      # 映射 (函數、字典)
+                        # - 說明：不要求映射結果對齊
+                        # - 範例：df.apply(np.sum, axis=0)
+  df.transform(axis=)  # 映射 (函數、字典)
+                        # - 說明：要求映射結果對齊
+                        # - 範例：df.transform(lambda x: x + 1)
+                        # - 範例：df.transform({"薪水": np.log, "年齡": lambda x: x*2}
   ```
 
 + 方法
@@ -331,28 +330,24 @@ print(df.loc[df["value"] < 11])
 + 方法
   ```py
   # 方法 - 映射
-  df_group.apply()        # 映射 (給【自訂函數】)
-                            # - 說明：功能類似 Series.apply，自訂函數的輸入為 Dataframe
-  df_group.transform()    # 映射 (給【聚合函數】)
-                            # - 說明：功能類似 SeriesGroupBy.transform，聚合函數的輸入為 Dataframe
-  df_group.aggregate()    # 聚合 (給【聚合函數】)
+  df_group.apply()        # 映射 (函數)
+                            # - 說明：不要求映射結果對齊、函數輸入為 Dataframe
+  df_group.transform()    # 映射 (函數)
+                            # - 說明：要求映射結果對齊、函數輸入為 Dataframe
+  df_group.aggregate()    # 聚合 (字典)
+                            # - 說明：不要求映射結果對齊
                             # - 範例：df.groupby("公司").agg({"薪水": ["median", "std"], "年齡": "mean"})
                             # - 翻譯：【每家公司】其員工的【薪水中位數、標準差】和【平均年齡】
-  df_group.resample()
-  df_group.first()
-  df_group.quantile()
   ```
 
 ### `SeriesGroupBy()`
 + 方法
   ```py
   # 方法 - 映射
-  ser_group.apply()       # 映射 (給【自訂函數】)
-                              # - 說明：功能類似 Series.apply，自訂函數的輸入為 Series
-  ser_group.transform()   # 映射 (給【聚合函數】)
-                              # - 說明：功能類似 Series.apply，聚合函數的輸入為 Series，輸出將貼回去
-                              # - 範例：df.groupby("公司")["薪水"].transform("mean")
-                              # - 翻譯：產生一個 Series，其為【每家公司】其員工的【薪水平均】貼回去給員工
+  ser_group.apply()       # 映射 (函數)
+                            # - 說明：不要求映射結果對齊、函數的輸入為 Series
+  ser_group.transform()   # 映射 (函數)
+                            # - 說明：要求映射結果對齊、函數的輸入為 Series
   ```
 
 
