@@ -358,6 +358,23 @@
 uv add ruff --group dev
 ```
 
+## Tips
+
+### Jupyter
+
+1. 下載 `ipykernel` 套件
+    ```
+    uv add ipykernel --group dev
+    ```
+
+2. 使用 VSCode 的話，Select Kernel 選擇虛擬環境的 Python Interpreter
+    ![](https://code.visualstudio.com/assets/docs/datascience/jupyter/native-kernel-picker.png)
+
+3. 使用 Browser IDE 的話
+    ```
+    uv run --with jupyter jupyter lab
+    ```
+
 ## Others
 
 + Linter / Formatter 功能請參考：[ruff](https://hackmd.io/@RogelioKG/ruff)
