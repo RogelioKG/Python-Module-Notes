@@ -1,6 +1,6 @@
 # sqlalchemy
 
-![](https://media.licdn.com/dms/image/v2/D4E10AQHg03wvp6XmBg/image-shrink_1280/image-shrink_1280/0/1722610852769?e=1745780400&v=beta&t=-eil40RhZ0TzsMk_jVPWgn3x_RcR9jxAqcJrSxfO-cg)
+[![RogelioKG/sqlalchemy](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/sqlalchemy)
 
 ## References
 + 📄 [**SQLAlchemy - Unified Tutorial**](https://docs.sqlalchemy.org/en/20/tutorial/index.html)

@@ -1,5 +1,7 @@
 # pyinstaller
 
+[![RogelioKG/pyinstaller](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/pyinstaller)
+
 ## References
 
 ## Note
