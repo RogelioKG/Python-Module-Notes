@@ -153,6 +153,14 @@ async def test(data: Annotated[FormData, Form()]):
       return doubled_number
   ```
 
+### `app.mount`
+```py
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
+```
++ 把整個 `static` 目錄掛在網站根目錄 `/`。
++ 請求 http://127.0.0.1:8000 → 對應到 `static/index.html` (因為設置 `html=True`)
++ 請求 http://127.0.0.1:8000/index.html → 對應到 `static/index.html`
++ 請求 http://127.0.0.1:8000/assets/foo.js → 對應到 `static/assets/foo.js`
 
 ## Uvicorn
 + `--reload`：開啟 hot reload
