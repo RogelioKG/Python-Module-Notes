@@ -352,7 +352,7 @@ uv add ruff --group dev
 ### namespace package
 
 + 有一種很特別的套件
-  + 安裝時 `uv add google-auth google-cloud`
+  + 安裝時 `uv add google-auth google-cloud-storage`
   + 引入時 `from google.auth import ...` `from google.cloud import ...` 
   + 嗯？我剛剛裝的是 `google-auth` 和 `google-cloud-storage` 對吧？怎麼變 `google` 了？
 
