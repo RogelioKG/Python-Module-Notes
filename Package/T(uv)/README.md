@@ -58,11 +58,44 @@
 
 ## Commands
 
-請參考 [UV CLI](https://docs.astral.sh/uv/reference/cli/#uv)。
+詳見 [UV CLI](https://docs.astral.sh/uv/reference/cli/#uv)。
 
 ### `init`：創建專案
 
   + `--python` 指定 Python 版本
+
+  + `--script`
+    + 用於構建一個簡單<mark>腳本</mark>
+    + 腳本的所有依賴直接寫在 dependencies
+      ```py
+      # /// script
+      # requires-python = ">=3.13"
+      # dependencies = ["httpx"]
+      # ///
+
+
+      import httpx
+
+
+      def main():
+          with httpx.Client() as client:
+              response = client.get("https://fakestoreapi.com/products/1")
+              print("Status Code:", response.status_code)
+              print("Response JSON:", response.json())
+
+
+      if __name__ == "__main__":
+          main()
+      ```
+    + 執行時，自動安裝所有依賴 (若有快取，會自動使用)
+      ```
+      uv run main.py
+      ```
+    + 未在 dependencies 指定的依賴，可外加 `--with` 選項新增依賴
+      > 假設你想換成某個版本的 httpx
+      ```
+      uv run --with httpx==0.27.0 main.py
+      ```
 
   + `--app`
     + 用於構建一個<mark>應用程式</mark>，通常不作為套件發布
@@ -138,15 +171,6 @@
     + user 實際安裝
       + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
       + <mark>會在 `.venv/Scripts/` 生成執行檔，供 user 調用</mark> (註：需先進入 venv)
-
-+ `--no-workspace`
-
-  + 在上層專案內創建的專案 (通常叫做 workspace)
-  + 不與上層專案共享依賴 (通常用於 monorepo)
-  
-  ```
-  uv init --no-workspace yet_another_project
-  ```
 
 + `--build-backend` 指定打包用 backend
   > 若專案是可發布套件才會用到的選項。\
@@ -347,14 +371,14 @@
 uv add ruff --group dev
 ```
 
-## Build
+## Project Structures
 
 ### namespace package
 
 + 有一種很特別的套件
-  + 安裝時 `uv add google-auth google-cloud-storage`
-  + 引入時 `from google.auth import ...` `from google.cloud import ...` 
-  + 嗯？我剛剛裝的是 `google-auth` 和 `google-cloud-storage` 對吧？怎麼變 `google` 了？
+  + install 時：`uv add google-auth google-cloud-storage`
+  + import 時：`from google.auth import ...` `from google.cloud import ...` 
+  + 嗯？我剛剛裝的是 `google-auth` 和 `google-cloud-storage` 對吧？怎麼都變 `google` 了？
 
 + namespace package 的魅力
   + 使用者所見目錄
@@ -391,28 +415,105 @@ uv add ruff --group dev
             ├── __init__.py
             └── ...
     ```
-+ <mark>為什麼要拆成這樣 😱？</mark>
-  + 套件變成類似插件（Addons）一樣
-  + 根據需求下載需要的插件，裡面包含不同功能的子套件
-  + 插件本身也能依賴多個插件，這樣就能包成一個功能更強大的插件
-  + 對於使用者而言，所有插件仍歸屬同一個 namespace（統一品牌體驗？）
++ 優勢
+  + 套件變成類似插件（addons）一樣
+  + 根據需求下載需要的插件，每個插件裡包含不同功能的子套件
+  + 插件本身也能依賴其他插件，這樣就能包成一個功能更強大的插件
+  + 對於 developer 而言，每個插件可分配一個團隊開發
+  + 對於 user 而言，所有插件仍歸屬同一個 namespace（統一品牌體驗）
 
++ 配置
+  + `pyproject.toml` 
+    ```toml
+    [project]
+    ...
+
+    [build-system]
+    requires = ["uv_build>=0.9.3,<0.10.0"]
+    build-backend = "uv_build"
+
+    [tool.uv.build-backend]
+    module-name = "google" # 命名空間
+    module-root = "" # 根目錄 (預設是 "src")
+    namespace = true # 使用 namespace package
+    ```
+  + 實際開發目錄
+    ```py
+    google-auth/ # 套件
+    │
+    └── google/
+        └── auth/ # 子套件
+        │   ├── __init__.py
+        │   └── ...
+        └── outh2/
+            ├── __init__.py
+            └── ...
+    ```
+
+### workspace
++ 參考
+  + [**Using workspaces - uv**](https://docs.astral.sh/uv/concepts/projects/workspaces)
+  + [**是 Ray 不是 Array - Monorepo**](https://israynotarray.com/other/20240413/3177435894/)
++ 簡單來說就是 <mark>monorepo</mark>
+  + <mark>每個小專案（package）都有自己的設定</mark>（`pyproject.toml`）
+  + 但由<mark>頂層專案（workspace）統一管理所有依賴</mark>（`uv.lock`）
++ 優勢
+  + 每個小專案都可以作為套件發布（不像 monolith 是單純的模組）
+  + CI / CD 根據依賴 DAG 進行部分測試（不像 monolith 改一行就要全部重測）
++ 專案目錄
+  ```py
+  albatross # 頂層專案
+  ├── packages 
+  │   ├── bird-feeder # 小專案 1
+  │   │   ├── pyproject.toml
+  │   │   └── src
+  │   │       └── bird_feeder
+  │   │           ├── __init__.py
+  │   │           └── foo.py
+  │   └── seeds # 小專案 2
+  │       ├── pyproject.toml
+  │       └── src
+  │           └── seeds
+  │               ├── __init__.py
+  │               └── bar.py
+  ├── pyproject.toml
+  ├── README.md
+  ├── uv.lock
+  └── src
+      └── albatross
+          └── main.py
+  ```
 + `pyproject.toml`
   ```toml
   [project]
-  ...
+  name = "albatross"
+  version = "0.1.0"
+  requires-python = ">=3.13"
+  dependencies = [
+      "bird-feeder",
+      "seeds",
+  ]
+
+  [tool.uv.sources]
+  bird-feeder = { workspace = true }
+  seeds = { workspace = true }
+
+  [tool.uv.workspace]
+  members = ["packages/*"]
+  ```
++ `bird-feeder/pyproject.toml`
+  ```toml
+  [project]
+  name = "bird-feeder"
+  version = "0.1.0"
+  description = "Add your description here"
+  requires-python = ">=3.13"
+  dependencies = ["httpx", "seeds"]
 
   [build-system]
-  requires = ["uv_build>=0.9.3,<0.10.0"]
+  requires = ["uv_build>=0.9.5,<0.10.0"]
   build-backend = "uv_build"
-
-  [tool.uv.build-backend]
-  module-name = "google" # 命名空間
-  module-root = "" # 根目錄 (預設是 "src")
-  namespace = true # 使用 namespace package
-
   ```
-
 
 ## Run with
 
