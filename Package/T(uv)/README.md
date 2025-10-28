@@ -13,6 +13,12 @@
   scoop install uv 
   ```
 
+## Cheatsheet
+熱騰騰小抄 (最常用到的指令)
+
+![uv.drawio](https://hackmd.io/_uploads/BJ4rJYRAxl.svg)
+
+
 ## Advantages
 
 🐍 Python 終於也有了一個上得了檯面的 package manger。
@@ -179,25 +185,22 @@
 
 ### `run`：執行腳本
   
-  + 一般執行
+  + ` `：一般執行
     ```
     uv run main.py
     ```
-  + `--with` 暫時將某版本的套件加入環境並執行
-    > 套件會被下載到全域 cache，若很久沒清會很胖，要定期 prune 一下。
+  + `--with`：暫時將某版本的套件加入環境並執行
+    > 套件會被下載到全域 cache，若很久沒清會很胖，要定期 prune 一下
     ```
     uv run --with httpx==0.26.0 main.py
     ```
 
 
-### `venv`：虛擬環境
+### `venv`：創建虛擬環境
 
-  + 創建虛擬環境 (預設目錄名 `.venv`)
-    ```
-    uv venv
-    ```
+  > 預設目錄名 `.venv`
 
-  + `--python` 指定虛擬環境 Python 版本
+  + `--python`：指定虛擬環境 Python 版本
     ```
     uv venv --python 3.11.4
     ```
@@ -208,22 +211,24 @@
 
 ### `add` / `remove`：安裝 / 移除套件
 
-  uv 如同 poetry、pnpm，會自動解析並移除未使用的相依套件。並有 lockfile 嚴格管理套件版本。
+  > 安裝時，自動解析並移除未使用的相依套件。\
+  > 並使用 lockfile 嚴格鎖定套件版本。
 
-  + `--no-sync` 不自動同步
-    > 只解析依賴，然後更新 `pyproject.toml` 和 `uv.lock`，不會自動使用 `uv sync` 安裝或移除套件。
+  + `--no-sync`：不自動同步
+    > 只解析依賴，並更新 `pyproject.toml` 和 `uv.lock`，不會自動安裝或移除套件。
 
 ### `sync`：同步套件
 
-  <mark>安裝全部套件的加強版</mark>。\
-  假如發生一些意外，導致你的 venv 缺了某些套件，或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
+  > <mark>安裝全部套件的加強版</mark>。\
+  > 假如發生一些意外，導致你的 venv 缺了某些套件，\
+  > 或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
 
 ### `tool`：工具
 
-  工具是一種提供 CLI 的執行檔或 Python 套件。\
-  工具會被獨立安裝在特別的環境 (非專案內的 venv)，以避免受相依套件影響。
+  > 工具是一種提供 CLI 的執行檔。\
+  > 會被安裝在獨立環境 (非專案內的 venv)，以避免受不相關的相依套件影響。
 
-  + `run` 類似 `npx` (可簡寫 `uvx`)
+  + `run`：類似 `npx` (可簡寫 `uvx`)
     ```
     uv tool run ruff check
     ```
@@ -233,12 +238,14 @@
       ```
       uv tool install ruff
       ```
-    + 指定 Python 版本安裝 (在工具未支持新版本 Python 時特別好用)
+    + 指定 Python 版本安裝
+      > 在工具未支持新版本 Python 時特別好用
       ```
       uv tool install ruff --python 3.10
       ```
     
-  + `dir` 工具被安裝在哪個目錄 (通常在 `%AppData%/Roaming/uv/tools`)
+  + `dir` 工具被安裝在哪個目錄
+    > 通常在 `%AppData%/Roaming/uv/tools`
     ```
     uv tool dir
     ```
@@ -267,35 +274,47 @@
       ```
 
 
-### `export`：輸出 lockfile
+### `export`：將 lockfile 導出為其他格式
 
-  + 輸出為 `requirements.txt`
+  + ` `
+    > 當 `pyproject.toml` 和 `uv.lock` 不一致時，\
+    > <mark>試圖同步</mark>，再導出 `uv.lock` 的 lockfile 資訊。
     ```
-    uv export --no-hashes --frozen --no-group dev --format requirements-txt > requirements.txt
+    uv export --no-hashes --format requirements-txt > requirements.txt
     ```
+  + `--format`
+    > 輸出格式
+  + `--no-hashes`
+    > 不希望導出內容有 hash 值。\
+    > (hash 值確保你下載到的是原本的套件，能防止供應鏈攻擊、中間人攻擊)
+  + `--frozen`
+    > 當 `pyproject.toml` 和 `uv.lock` 不一致時，\
+    > <mark>不會試圖先同步</mark>，而是直接導出 `uv.lock` 的 lockfile 資訊。
+  + `--locked`
+    > 斷言 `uv.lock` 在導出過程中，不會被更改。\
+    > (即斷言 <mark>`pyproject.toml` 和 `uv.lock` 一致</mark>)
 
 ### `build` / `publish`：構建 / 發布套件
 
-  `uv build` + `uv publish`，就這麼簡單。唯 publish 時須注意兩點：
-  1. 發布到不同套件源 (比如 testpypi)
+  > `uv build` + `uv publish`，就這麼簡單。\
+  > 唯獨 publish 時須注意兩點：
+  > 1. 發布到不同套件源 (比如 testpypi)
       > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index：指定套件源))。
-  2. 會問你 username 和 password，但現已改成使用 API token 登入
+  > 2. 會問你 username 和 password，但現已改成使用 API token 登入
       > 因此 username 你要輸入 `__token__`，password 再輸入 API token 即可。
 
 ### `cache`：快取
 
-  uv 為避免重複的下載，採取激進的快取策略，這導致快取容易變胖，要定期 prune。
+  > uv 為避免重複的下載，採取激進的快取策略，這導致快取容易變胖，要定期 prune。
 
-  + `clean` / `prune` 清除 / 修剪
+  + `clean` / `prune`：清除 / 修剪
 
-    這兩兄弟用法也是和 pnpm 很像，前者是完全清除所有快取，後者僅移除沒用到的快取。
+    > 這兩兄弟用法也是和 pnpm 很像，前者是完全清除所有快取，後者僅移除沒用到的快取。
 
 ### `self`：針對 uv 自身的功能
 
-  + `update` 自行更新
-    > 只能用在 standalone 安裝版 (比如 Linux 的 `curl` 或 `wget`、Windows 的 `irm`)，\
-    > 若使用 Linux 的 `apt-get`、Mac 的 `brew`、Windows 的 `scoop` 等 package manager 安裝 `uv`，\
-    > 需要使用 package manager 它們自己的 upgrade 方式。
+  + `update`：自行更新
+    > 只能用在 standalone 安裝版 (比如 Linux 的 `curl` 或 `wget`、Windows 的 `irm`)，若使用 Linux 的 `apt-get`、Mac 的 `brew`、Windows 的 `scoop` 等 package manager 安裝 `uv`，需要使用 package manager 它們自己的 upgrade 方式。
 
 ### `tree`：依賴樹
   ...
@@ -303,15 +322,14 @@
 ### `pip`：相容 pip 介面
   ...
 
-### `lock`：手動生成 lockfile
+### `lock`：生成 lockfile
   ...
 
 ### `generate-shell-completion` 指令自動補全
 
-+ PowerShell：放在 `$PROFILE` (腳本)
-+ Bash：放在 `~/.bashrc` (腳本)
-
-註：開啟 shell 時，會先執行一遍這個初始化腳本，註冊設定。
+> 初始化腳本 (開啟 shell 時，會先執行一遍此腳本，註冊設定)
+> - PowerShell：放在 `$PROFILE`
+> - Bash：放在 `~/.bashrc`
 
 + 將 uv 的自動補全腳本，注入到初始化腳本內
   ```
@@ -322,7 +340,7 @@
 
 ### `--index`：指定套件源
 
-  + `pyproject.toml` 可定義不同套件源，下指令時就可以加上 `--index` name 選擇
+  + 可定義不同套件源，下指令時就可以加上 `--index <name>` 選擇套件源
     ```toml
     # pyproject.toml
     [[tool.uv.index]]
@@ -366,10 +384,10 @@
     ```
 
 ### `--group` / `--no-group`：指定相依套件組
-將 ruff 安裝到 dev groups
-```
-uv add ruff --group dev
-```
++ 將 ruff 安裝到 dev groups
+    ```
+    uv add ruff --group dev
+    ```
 
 ## Project Structures
 
