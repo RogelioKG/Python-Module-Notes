@@ -14,285 +14,356 @@
   ```
 
 ## Cheatsheet
-熱騰騰小抄 (最常用到的指令)
+👇 最常用到的指令
 
-![uv.drawio](https://hackmd.io/_uploads/BJ4rJYRAxl.svg)
+![uv.drawio](https://hackmd.io/_uploads/Byn2TYA0xx.svg)
 
 
 ## Advantages
 
-🐍 Python 終於也有了一個上得了檯面的 package manger。
+🐍 Python 終於也有了一個上得了檯面的 package manger
 
-### ✅ 良好的依賴解析
+### 🧩 良好的依賴解析
 
-  刪除套件時，是真的會找出沒用到的依賴套件並刪除 (確保無 redundancy)
+> 刪除套件時，是真的會找出沒用到的依賴套件並刪除 (確保無 redundancy)
 
-### ✅ 不只是依賴管理工具
+### 🧰 不只是依賴管理
   
-  集成非常多 out of the box 的工具 📦
-  + multiversion python
-  + dependency management (install, uninstall, lockfile...)
-  + virtual env
-  + build & publish packages
+> 集成非常多 out-of-the-box 的工具
+> + Dependency Management
+> + Virtual Environment
+> + Multi-version Python
+> + Publish Packages
 
-### ✅ 相較於 pip 快<mark>數十倍</mark>的速度
+### ⚡ 比 pip 快<mark>數十倍</mark>的速度
 
-  你以為 package manager 安裝套件的耗時，就是讓你去泡咖啡偷懶的時間嗎？\
-  噢不我的朋友🤔，當你拿著你的杯子，準備離開電腦桌的時候，\
-  uv 就已經以趕火車的速度，完成 dependency resolution 並 install 完畢。\
-  想見識這個驚掉下巴的速度，詳見 [benchmark](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
+> 你以為 package manager 安裝套件的耗時，就是讓你去泡咖啡偷懶的時間嗎？\
+> 噢不我的朋友，當你拿著你的杯子，準備離開電腦桌的時候，\
+> uv 就已經以趕火車的速度，完成 dependency resolution 並 install 完畢。\
+> 想見識這個驚掉下巴的速度，詳見 [benchmark](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
 
 ## Note
 
 |☢️ <span class="warning">WARNING</span>|
 |:---|
-|此 package manager 仍在開發狀態！<br>此筆記紀錄的是 <mark>`0.9.4`</mark> (2025/10/19) 的功能|
+|uv 仍在開發中！<br>此筆記紀錄的是 <mark>`0.9.5`</mark> (2025/10/21) 的功能！|
 
-|📘 <span class="note">NOTE</span>|
+|📘 <span class="note">NOTE</span> : uv|
 |:---|
-|此 package manager 的 <mark>lockfile 為 `uv.lock`</mark>|
-|[PEP 751](https://peps.python.org/pep-0751/) (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`，<br>這個小傢伙應該還需要一點時間，來發展成廣泛使用的 lockfile。 |
-
-|📘 <span class="note">NOTE</span>|
-|:---|
-|uv 預設使用 hardlink 安裝 (連結到 local cache)|
-
-|📘 <span class="note">NOTE</span>|
-|:---|
-|uv 擁有自己的 [build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`|
+| uv 的安裝：使用 hardlink (詳見：[cache](#cache：快取))|
+|uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
+|uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
 
 
 ## Commands
 
 詳見 [UV CLI](https://docs.astral.sh/uv/reference/cli/#uv)。
 
+
 ### `init`：創建專案
 
-  + `--python` 指定 Python 版本
++ #### `--python`
+  > 指定 Python 版本
 
-  + `--script`
-    + 用於構建一個簡單<mark>腳本</mark>
-    + 腳本的所有依賴直接寫在 dependencies
-      ```py
-      # /// script
-      # requires-python = ">=3.13"
-      # dependencies = ["httpx"]
-      # ///
-
-
-      import httpx
++ #### `--script`
+  > 用於構建一個簡單<mark>腳本</mark>
+  + 腳本的所有依賴直接寫在 dependencies
+    ```py
+    # /// script
+    # requires-python = ">=3.13"
+    # dependencies = ["httpx"]
+    # ///
 
 
-      def main():
-          with httpx.Client() as client:
-              response = client.get("https://fakestoreapi.com/products/1")
-              print("Status Code:", response.status_code)
-              print("Response JSON:", response.json())
+    import httpx
 
 
-      if __name__ == "__main__":
-          main()
-      ```
-    + 執行時，自動安裝所有依賴 (若有快取，會自動使用)
-      ```
-      uv run main.py
-      ```
-    + 未在 dependencies 指定的依賴，可外加 `--with` 選項新增依賴
-      > 假設你想換成某個版本的 httpx
-      ```
-      uv run --with httpx==0.27.0 main.py
-      ```
+    def main():
+        with httpx.Client() as client:
+            response = client.get("https://fakestoreapi.com/products/1")
+            print("Status Code:", response.status_code)
+            print("Response JSON:", response.json())
 
-  + `--app`
-    + 用於構建一個<mark>應用程式</mark>，通常不作為套件發布
-    + 目錄架構
-      ```
-      project_app/
-      ├── .gitignore
-      ├── .python-version
-      ├── main.py
-      ├── pyproject.toml
-      └── README.md
-      ```
 
-  + `--lib`
-    + 用於構建一個<mark>函式庫</mark>，可作為套件發布
-    + 目錄架構
-      ```
-      project_lib/
-      ├── .gitignore
-      ├── .python-version
-      ├── pyproject.toml
-      ├── README.md
-      └── src/
-          └── project_lib/
-              ├── py.typed
-              └── __init__.py
-      ```
-    + `pyproject.toml`（build 相關資訊儲存於此）
-      ```toml
-      [project]
-      ...
-
-      [build-system]
-      requires = ["uv_build>=0.9.3,<0.10.0"]
-      build-backend = "uv_build"
-      ```
-    + `uv sync` 測試安裝
-      + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能（就如同 `pip install -e .`）
-      + 原理：把 `src/` 目錄加入 `sys.path`
-    + user 實際安裝
-      + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
-    + 命名空間套件 namespace package
-      + ...
-      + 一個沒有 __init__.py 檔案的命名空間目錄，多個下載的套件都被放到此處 
-
-  + `--package`
-    + 用於構建一些 <mark>CLI 工具</mark>，可作為套件發布
-    + 目錄架構
-      ```
-      project_package/
-      ├── .gitignore
-      ├── .python-version
-      ├── pyproject.toml
-      ├── README.md
-      └── src/
-          └── project_package/
-              └── __init__.py
-      ```
-    + `pyproject.toml`（build 相關資訊儲存於此）
-      ```toml
-      [project.scripts]
-      rogeliokg-core = "rogeliokg_core:main" 
-      # 執行檔名稱 rogeliokg-core
-      # 入口函式 src/rogeliokg_core/__init__.py:main
-
-      [build-system]
-      requires = ["uv_build>=0.9.3,<0.10.0"]
-      build-backend = "uv_build"
-      ```
-    + `uv sync` 測試安裝
-      + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能（就如同 `pip install -e .`）
-      + 原理：把 `src/` 目錄加入 `sys.path`
-    + user 實際安裝
-      + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
-      + <mark>會在 `.venv/Scripts/` 生成執行檔，供 user 調用</mark> (註：需先進入 venv)
-
-+ `--build-backend` 指定打包用 backend
-  > 若專案是可發布套件才會用到的選項。\
-  > 你可以自己指定第三方 build backend，比如：`hatch` (hatchling)、`setuptools` (setuptools)。\
-  > 預設是 `uv-build`。
-
-### `run`：執行腳本
-  
-  + ` `：一般執行
+    if __name__ == "__main__":
+        main()
+    ```
+  + 執行時，自動安裝所有依賴 (若有快取，會自動使用)
     ```
     uv run main.py
     ```
-  + `--with`：暫時將某版本的套件加入環境並執行
-    > 套件會被下載到全域 cache，若很久沒清會很胖，要定期 prune 一下
+  + 未在 dependencies 指定的依賴，可外加 `--with` 選項新增依賴
+    > 假設你想換成某個版本的 httpx
     ```
-    uv run --with httpx==0.26.0 main.py
-    ```
-
-
-### `venv`：創建虛擬環境
-
-  > 預設目錄名 `.venv`
-
-  + `--python`：指定虛擬環境 Python 版本
-    ```
-    uv venv --python 3.11.4
+    uv run --with httpx==0.27.0 main.py
     ```
 
-    |🚨 <span class="caution">CAUTION</span>|
-    |:---|
-    |由於 `uv sync` 根據 `.python-version` 和 `pyproject.toml` 內的 `requires-python` 決定 Python 版本，若使用 `uv venv` 切換虛擬環境的 Python 版本，記得要先<mark>手動更改這兩塊地方</mark>。 |
++ #### `--app`
+  > 用於構建一個<mark>應用程式</mark>，通常不作為套件發布
+  + 目錄架構
+    ```
+    project_app/
+    ├── .gitignore
+    ├── .python-version
+    ├── main.py
+    ├── pyproject.toml
+    └── README.md
+    ```
 
-### `add` / `remove`：安裝 / 移除套件
++ #### `--lib`
+  > 用於構建一個<mark>函式庫</mark>，可作為套件發布
+  + 目錄架構
+    ```
+    project_lib/
+    ├── .gitignore
+    ├── .python-version
+    ├── pyproject.toml
+    ├── README.md
+    └── src/
+        └── project_lib/
+            ├── py.typed
+            └── __init__.py
+    ```
+  + `pyproject.toml`（build 相關資訊儲存於此）
+    ```toml
+    [project]
+    ...
 
-  > 安裝時，自動解析並移除未使用的相依套件。\
-  > 並使用 lockfile 嚴格鎖定套件版本。
+    [build-system]
+    requires = ["uv_build>=0.9.3,<0.10.0"]
+    build-backend = "uv_build"
+    ```
+  + `uv sync` 測試安裝
+    + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能（就如同 `pip install -e .`）
+    + 原理：把 `src/` 目錄加入 `sys.path`
+  + user 實際安裝
+    + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
 
-  + `--no-sync`：不自動同步
-    > 只解析依賴，並更新 `pyproject.toml` 和 `uv.lock`，不會自動安裝或移除套件。
++ #### `--package`
+  > 用於構建一些 <mark>CLI 工具</mark>，可作為套件發布
+  + 目錄架構
+    ```
+    project_package/
+    ├── .gitignore
+    ├── .python-version
+    ├── pyproject.toml
+    ├── README.md
+    └── src/
+        └── project_package/
+            └── __init__.py
+    ```
+  + `pyproject.toml`（build 相關資訊儲存於此）
+    ```toml
+    [project.scripts]
+    rogeliokg-core = "rogeliokg_core:main" 
+    # 執行檔名稱 rogeliokg-core
+    # 入口函式 src/rogeliokg_core/__init__.py:main
+
+    [build-system]
+    requires = ["uv_build>=0.9.3,<0.10.0"]
+    build-backend = "uv_build"
+    ```
+  + `uv sync` 測試安裝
+    + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能（就如同 `pip install -e .`）
+    + 原理：把 `src/` 目錄加入 `sys.path`
+  + user 實際安裝
+    + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
+    + <mark>會在 `.venv/Scripts/` 生成執行檔，供 user 調用</mark> (註：需先進入 venv)
+
++ #### `--build-backend`
+  > 指定打包用 backend\
+  > (若專案是可發布套件才會用的到)
+  
+  + 可自己指定第三方 build backend
+    > 比如：`hatch` (hatchling)、`setuptools` (setuptools)。\
+    > 預設是 `uv-build`。
+
 
 ### `sync`：同步套件
 
-  > <mark>安裝全部套件的加強版</mark>。\
-  > 假如發生一些意外，導致你的 venv 缺了某些套件，\
-  > 或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
+> <mark>安裝全部套件的加強版</mark>。\
+> 假如發生一些意外，導致你的 venv 缺了某些套件，\
+> 或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
 
-### `tool`：工具
 
-  > 工具是一種提供 CLI 的執行檔。\
-  > 會被安裝在獨立環境 (非專案內的 venv)，以避免受不相關的相依套件影響。
+### `add` ：安裝套件
 
-  + `run`：類似 `npx` (可簡寫 `uvx`)
-    ```
-    uv tool run ruff check
-    ```
++ #### `-r`
+  > 使用 `requirements.txt` 安裝套件，並更新 `pyproject.toml` 和 `uv.lock`
+  ```
+  uv add -r requirements.txt
+  ```
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |  若 uv 想使用同事給 `requirements.txt` 安裝套件，只能把所有套件都安裝進來。<br>而無法猜測同事原先使用 `pip install` 哪些套件。 |
+  + 使用 pip (對 pip 而言，是同一個結構)
+    + 安裝 `requests`
+      ```
+      certifi==2025.10.5
+      charset-normalizer==3.4.4
+      idna==3.11
+      requests==2.32.5
+      urllib3==2.5.0
+      ```
+    + 安裝 `urllib3` 和 `requests`
+      ```
+      certifi==2025.10.5
+      charset-normalizer==3.4.4
+      idna==3.11
+      requests==2.32.5
+      urllib3==2.5.0
+      ```
+  + 使用 uv (對 uv 而言，卻是不同結構)
+    + 安裝 `requests`
+      ```
+      temp v0.1.0
+      └── requests v2.32.5
+          ├── certifi v2025.10.5
+          ├── charset-normalizer v3.4.4
+          ├── idna v3.11
+          └── urllib3 v2.5.0
+      ```
+    + 安裝 `urllib3` 和 `requests`
+      > 注意到了嗎，你手動安裝的套件，都在頂層
+      ```
+      temp v0.1.0
+      ├── requests v2.32.5
+      │   ├── certifi v2025.10.5
+      │   ├── charset-normalizer v3.4.4
+      │   ├── idna v3.11
+      │   └── urllib3 v2.5.0
+      └── urllib3 v2.5.0
+      ```
 
-  + `install` / `uninstall` 安裝 / 移除
-    + 一般安裝
-      ```
-      uv tool install ruff
-      ```
-    + 指定 Python 版本安裝
-      > 在工具未支持新版本 Python 時特別好用
-      ```
-      uv tool install ruff --python 3.10
-      ```
-    
-  + `dir` 工具被安裝在哪個目錄
-    > 通常在 `%AppData%/Roaming/uv/tools`
-    ```
-    uv tool dir
-    ```
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  | 既然一種扁平狀結構，能推斷出多種樹狀結構，<br>我們就無法用一種扁平狀結構，去唯一決定為一種樹狀結構。<br>意即：無法猜測同事原先使用 `pip install` 哪些套件。<br><mark>這絕不是 uv 的缺陷，恰恰相反，這是 pip 的缺陷！</mark> |
+  ```toml
+  # 使用 `requiremets.txt` 安裝後，會長成這副慘烈的模樣
+  [project]
+  ...
+  dependencies = [
+      "certifi==2025.10.5",
+      "charset-normalizer==3.4.4",
+      "idna==3.11",
+      "requests==2.32.5",
+      "urllib3==2.5.0",
+  ]
+  ```
+  |📗 <span class="tip">TIP</span>|
+  |:---|
+  |那要怎麼解決呢？<br>只能<mark>請你的同事回想，他當初手動安裝過的是哪些套件</mark>囉！|
+
++ #### `--no-sync`
+  > 不自動同步
+  + 只解析依賴，並更新 `pyproject.toml` 和 `uv.lock`
+  + 不會自動安裝、移除套件
+
+
+### `remove`：移除套件
+
+> 移除套件時，會自動解析並移除未使用的相依套件。
+
++ #### `--no-sync`
+  > 不自動同步
+  + 只解析依賴，並更新 `pyproject.toml` 和 `uv.lock`
+  + 不會自動安裝、移除套件
+
+
+### `run`：執行腳本
+  
++ #### ` `
+  > 一般執行
+  ```
+  uv run main.py
+  ```
++ #### `--with`
+  > 暫時將某版本的套件加入環境並執行。
+  ```
+  uv run --with httpx==0.26.0 main.py
+  ```
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |會下載到 global cache，若太久沒清會很胖，要定期清|
+
+
+### `tree`：依賴樹
+> 展示套件們的依賴關係
+
 
 ### `python`：多版本
 
-  + `list` 列出 (通常在 `%AppData%/Roaming/uv/python`)
-    ```
-    uv python list
-    ```
++ #### `list`
+  > 列出可用 Python 版本
+  ```
+  uv python list
+  ```
 
-  + `install` / `uninstall` 安裝 / 移除
-    ```
-    uv python install 3.12.0
-    ```
++ #### `install` / `uninstall`
+  > 安裝 / 移除
+  ```
+  uv python install 3.12.0
+  ```
 
-  + `pin` 切換 Python 版本 (更改 `.python-version`)
++ #### `pin`
+  > 切換 Python 版本 (更改 `.python-version`)
 
-    + 專案內切換
-      ```
-      uv python pin 3.11
-      ```
-    + `--global` 全域切換
-      ```
-      uv python pin 3.11 --global
+  + ` `
+    > 專案內切換
+    ```
+    uv python pin 3.11
+    ```
+  + `--global`
+    > 全域切換
+    ```
+    uv python pin 3.11 --global
       ```
 
 
 ### `export`：將 lockfile 導出為其他格式
 
-  + ` `
-    > 當 `pyproject.toml` 和 `uv.lock` 不一致時，\
-    > <mark>試圖同步</mark>，再導出 `uv.lock` 的 lockfile 資訊。
-    ```
-    uv export --no-hashes --format requirements-txt > requirements.txt
-    ```
-  + `--format`
-    > 輸出格式
-  + `--no-hashes`
-    > 不希望導出內容有 hash 值。\
-    > (hash 值確保你下載到的是原本的套件，能防止供應鏈攻擊、中間人攻擊)
-  + `--frozen`
-    > 當 `pyproject.toml` 和 `uv.lock` 不一致時，\
-    > <mark>不會試圖先同步</mark>，而是直接導出 `uv.lock` 的 lockfile 資訊。
-  + `--locked`
-    > 斷言 `uv.lock` 在導出過程中，不會被更改。\
-    > (即斷言 <mark>`pyproject.toml` 和 `uv.lock` 一致</mark>)
++ #### ` `
+  ```
+  uv export --no-hashes --format requirements-txt > requirements.txt
+  ```
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |當 `pyproject.toml` 和 `uv.lock` 不一致時，<br><mark>試圖同步</mark>，再導出 `uv.lock` 的 lockfile 資訊。|
++ #### `--format`
+  > 輸出格式
++ #### `--no-hashes`
+  > 不希望導出內容有 hash 值。\
+  > (hash 值確保你下載到的是原本的套件，能防止供應鏈攻擊、中間人攻擊)
++ #### `--frozen`
+  > 當 `pyproject.toml` 和 `uv.lock` 不一致時，\
+  > <mark>不會試圖先同步</mark>，而是直接導出 `uv.lock` 的 lockfile 資訊。
++ #### `--locked`
+  > 斷言 `uv.lock` 在導出過程中，不會被更改。\
+  > (即斷言 <mark>`pyproject.toml` 和 `uv.lock` 一致</mark>)
+
+
+### `cache`：快取
+
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |uv 為避免重複下載，採取激進快取策略，若太久沒清會很胖，要定期清|
+
++ #### `dir`
+  > 快取檔案所在目錄 (通常是 `%LOCALAPPDATA%/uv/cache`)
+
++ #### `clean`
+  > 清除 - 清除整個快取
+
++ #### `prune`
+  > 修剪 - 僅清除沒被任何專案用到的快取
+  
+  |🔮 <span class="important">IMPORTANT</span>|
+  |:---|
+  |「修剪」也太聰明了吧？它怎麼知道我有沒有用到？|
+  |四散各地的專案，在各自的虛擬環境安裝套件時，套件首先會被放置在硬碟空間中，<br>接著以快取檔案 hardlink (在 `%LOCALAPPDATA%/uv/cache` 目錄內) 指向這塊硬碟空間<br>(第一次安裝時需要)，<br>再以虛擬環境 hardlink (在專案的 `.venv` 目錄內) 指向這塊硬碟空間<br>(每個專案安裝時需要)，<br>不只省下安裝的網路耗時，也省下硬碟空間。|
+  |而這塊硬碟空間會知道自己被多少個 hardlink 指到，<br>只要某個套件的虛擬環境 hardlink 歸 0 時，就能知道它是那個需要被修剪掉的套件。 |
+ 
+
 
 ### `build` / `publish`：構建 / 發布套件
 
@@ -303,40 +374,76 @@
   > 2. 會問你 username 和 password，但現已改成使用 API token 登入
       > 因此 username 你要輸入 `__token__`，password 再輸入 API token 即可。
 
-### `cache`：快取
-
-  > uv 為避免重複的下載，採取激進的快取策略，這導致快取容易變胖，要定期 prune。
-
-  + `clean` / `prune`：清除 / 修剪
-
-    > 這兩兄弟用法也是和 pnpm 很像，前者是完全清除所有快取，後者僅移除沒用到的快取。
-
-### `self`：針對 uv 自身的功能
-
-  + `update`：自行更新
-    > 只能用在 standalone 安裝版 (比如 Linux 的 `curl` 或 `wget`、Windows 的 `irm`)，若使用 Linux 的 `apt-get`、Mac 的 `brew`、Windows 的 `scoop` 等 package manager 安裝 `uv`，需要使用 package manager 它們自己的 upgrade 方式。
-
-### `tree`：依賴樹
-  ...
 
 ### `pip`：相容 pip 介面
   ...
 
+
+### `venv`：創建虛擬環境
+
+> 預設目錄名 `.venv`
+
++ #### `--python`
+  > 指定虛擬環境 Python 版本
+  ```
+  uv venv --python 3.11.4
+  ```
+
+
+### `tool`：工具
+
+> 工具是一種提供 CLI 的執行檔。\
+> 會被安裝在獨立環境 (非專案內)，以避免受不相關的相依套件影響。
+
++ #### `run`
+  > 暫時下載工具 (可簡寫 `uvx`)
+  ```
+  uv tool run ruff check
+  ```
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  |會下載到 global cache，若太久沒清會很胖，要定期清|
+
++ #### `install` / `uninstall`
+  > 安裝 / 移除
+  + 一般安裝
+    ```
+    uv tool install ruff
+    ```
+  + 指定 Python 版本安裝
+    > 在工具未支持新版本 Python 時特別好用
+    ```
+    uv tool install ruff --python 3.10
+    ```
+    
++ #### `dir` 
+  > 工具被安裝在哪個目錄\
+  > (通常是 `%AppData%/Roaming/uv/tools`)
+  ```
+  uv tool dir
+  ```
+
+
 ### `lock`：生成 lockfile
   ...
 
-### `generate-shell-completion` 指令自動補全
 
-> 初始化腳本 (開啟 shell 時，會先執行一遍此腳本，註冊設定)
-> - PowerShell：放在 `$PROFILE`
-> - Bash：放在 `~/.bashrc`
+### `generate-shell-completion` 指令自動補全
 
 + 將 uv 的自動補全腳本，注入到初始化腳本內
   ```
   uv generate-shell-completion powershell >> $PROFILE
   ```
+  |📘 <span class="note">NOTE</span>|
+  |:---|
+  |開啟 shell 時，會先執行一遍初始化腳本，註冊設定<br>PowerShell：放在 `$PROFILE`；Bash：放在 `~/.bashrc`|
+
+
+
+
 
 ## Options
+
 
 ### `--index`：指定套件源
 
@@ -383,11 +490,13 @@
     rogeliokg-cloud = [{ path = "C:/.../rogeliokg_cloud-0.1.0-py3-none-any.whl" }]
     ```
 
+
 ### `--group` / `--no-group`：指定相依套件組
 + 將 ruff 安裝到 dev groups
     ```
     uv add ruff --group dev
     ```
+
 
 ## Project Structures
 
