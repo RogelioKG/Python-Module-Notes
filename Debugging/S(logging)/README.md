@@ -32,61 +32,61 @@ print(logging.getLevelName(50))  # CRITICAL (最嚴重)
 
 #### root logger
 + 說明
-  + <mark>已預建立好的 logger 物件</mark>
-  + 是所有 logger 的根節點
+    + <mark>已預建立好的 logger 物件</mark>
+    + 是所有 logger 的根節點
 + 範例
-  ```py
-  # 直接使用 root logger 開始記錄
-  logging.critical("critical message")
-  # 獲取 root logger
-  root_logger = logging.getLogger(name=None)
-  ```
+    ```py
+    # 直接使用 root logger 開始記錄
+    logging.critical("critical message")
+    # 獲取 root logger
+    root_logger = logging.getLogger(name=None)
+    ```
 
 #### custom logger
 + 說明
-  + 每個 logger 都能有各自的「輸出目標」、「訊息等級」、「格式」
+    + 每個 logger 都能有各自的「輸出目標」、「訊息等級」、「格式」
 + 建議
-  + 不要設定 root logger (以免影響第三方套件)
-  + 盡量自訂 logger (維持隔離性、可控性)
+    + 不要設定 root logger (以免影響第三方套件)
+    + 盡量自訂 logger (維持隔離性、可控性)
 + 範例
-  ```py
-  # dev logger 是 root logger 的子節點
-  dev_logger = logging.getLogger(name="dev")
-  dev_logger.setLevel(logging.DEBUG)
+    ```py
+    # dev logger 是 root logger 的子節點
+    dev_logger = logging.getLogger(name="dev")
+    dev_logger.setLevel(logging.DEBUG)
 
-  handler = logging.StreamHandler()
-  dev_logger.addHandler(handler)
+    handler = logging.StreamHandler()
+    dev_logger.addHandler(handler)
 
-  dev_logger.debug("debug message")
-  dev_logger.info("info message")
-  dev_logger.warning("warning message")
-  dev_logger.error("error message")
-  dev_logger.critical("critical message")
+    dev_logger.debug("debug message")
+    dev_logger.info("info message")
+    dev_logger.warning("warning message")
+    dev_logger.error("error message")
+    dev_logger.critical("critical message")
 
-  # 輸出結果
-  # warning message
-  # error message
-  # critical message
-  ```
+    # 輸出結果
+    # warning message
+    # error message
+    # critical message
+    ```
 
-  | 📗 <span class="tip">TIP</span>                        |
-  | :---------------------------------------------------- |
-  | 若你在煩惱 logger 的命名，慣例上我們會使用 `__name__` |
+    | 📗 <span class="tip">TIP</span>                        |
+    | :---------------------------------------------------- |
+    | 若你在煩惱 logger 的命名，慣例上我們會使用 `__name__` |
 
 #### tree structure
 + 說明
-  + <mark>用 `.` 定義 logger 之間父子關係</mark>
-    + `main` (父) -> `main.sub` (子)
-  + 子 logger 發出 log 時，會同時傳遞給父 logger
-    + 訊息會一層層 bubbling，直到 root logger
-  + 若不想讓子 logger 傳遞給父 logger
-    + `child_logger.propagate = False`
+    + <mark>用 `.` 定義 logger 之間父子關係</mark>
+        + `main` (父) -> `main.sub` (子)
+    + 子 logger 發出 log 時，會同時傳遞給父 logger
+        + 訊息會一層層 bubbling，直到 root logger
+    + 若不想讓子 logger 傳遞給父 logger
+        + `child_logger.propagate = False`
 + 範例
-  ```py
-  main_logger = logging.getLogger("main")
-  sub_logger = logging.getLogger("main.sub") # 父子關係
-  sub_logger = main_logger.getChild("sub") # 也可以這樣使用
-  ```
+    ```py
+    main_logger = logging.getLogger("main")
+    sub_logger = logging.getLogger("main.sub") # 父子關係
+    sub_logger = main_logger.getChild("sub") # 也可以這樣使用
+    ```
 + 圖解
     ```mermaid
     flowchart TD
@@ -110,26 +110,26 @@ print(logging.getLevelName(50))  # CRITICAL (最嚴重)
 
 ### `logging.basicConfig()`
 + 說明
-  + <mark>設置 root logger</mark>
+    + <mark>設置 root logger</mark>
 + 範例
-  ```py
-  logging.basicConfig(
-      level="DEBUG",
-      filename="blue_ox.log",
-      format="%(asctime)s %(levelname)s %(lineno)s %(message)s",
-      datefmt="%Y-%m-%d %H:%M:%S"
-  )
-  ```
+    ```py
+    logging.basicConfig(
+        level="DEBUG",
+        filename="blue_ox.log",
+        format="%(asctime)s %(levelname)s %(lineno)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    ```
 
 
 ## Handler
 
 ### `logging.XXXHandler`
 + 說明
-  + 處理 <mark>logger 紀錄訊息的「輸出目標」</mark> (終端、檔案)
-  + 支援多 handler
-    + 一個 logger 可同時綁定多個 handler
-    + 同一則訊息，可同時輸出到多個位置
+    + 處理 <mark>logger 紀錄訊息的「輸出目標」</mark> (終端、檔案)
+    + 支援多 handler
+        + 一個 logger 可同時綁定多個 handler
+        + 同一則訊息，可同時輸出到多個位置
 + 類型
     | 類別名稱                   | 輸出目標                | 模組               | 用途                              |
     | :------------------------- | :---------------------- | :----------------- | :-------------------------------- |
@@ -400,9 +400,9 @@ print(logging.getLevelName(50))  # CRITICAL (最嚴重)
 
 ### `loggging.config.dictConfig`
 + 說明
-  + <mark>使用字典設置 logger</mark>
+    + <mark>使用字典設置 logger</mark>
 + 範例
-  ```py
+    ```py
     import logging
     import logging.config
 
@@ -454,5 +454,4 @@ print(logging.getLevelName(50))  # CRITICAL (最嚴重)
     logger = logging.getLogger("app")
     logger.debug("debug message")
     logger.info("info message")
-
-  ```
+    ```
