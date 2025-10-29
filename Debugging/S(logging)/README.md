@@ -88,25 +88,25 @@ print(logging.getLevelName(50))  # CRITICAL (最嚴重)
   sub_logger = main_logger.getChild("sub") # 也可以這樣使用
   ```
 + 圖解
-  ```mermaid
-  flowchart TD
-      1(["main.sub1.branch1"])
-      2(["main.sub1"])
-      3(["main.sub1.branch2"])
-      4(["main"])
-      5(["main.sub2.dev1"])
-      6(["main.sub2"])
-      7(["main.sub2.dev2"])
+    ```mermaid
+    flowchart TD
+        1(["main.sub1.branch1"])
+        2(["main.sub1"])
+        3(["main.sub1.branch2"])
+        4(["main"])
+        5(["main.sub2.dev1"])
+        6(["main.sub2"])
+        7(["main.sub2.dev2"])
 
-      4 --> 2 & 6
-      2 --> 1 & 3
-      6 --> 5 & 7
+        4 --> 2 & 6
+        2 --> 1 & 3
+        6 --> 5 & 7
 
-      classDef Green fill:#1b400d
-      class 1,2,3,4,5,6,7,8,9 Green
-      classDef white color:#e3e3e3
-      class 1,2,3,4,5,6,7,8,9 White
-  ```
+        classDef Green fill:#1B600D
+        class 1,2,3,4,5,6,7,8,9 Green
+        classDef White color:#ffffff
+        class 1,2,3,4,5,6,7,8,9 White
+    ```
 
 ### `logging.basicConfig()`
 + 說明
