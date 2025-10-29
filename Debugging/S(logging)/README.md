@@ -291,6 +291,8 @@ print(logging.getLevelName(50))  # CRITICAL (最嚴重)
 
         ```
 ## Formatter
+
+### `logging.Formatter`
 + 說明
     | 格式                  | 描述                         |
     | --------------------- | ---------------------------- |
