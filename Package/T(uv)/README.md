@@ -187,6 +187,9 @@
 
 
 ### `add` ：安裝套件
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+|會下載到快取，若太久沒清會很胖，要定期清|
 
 + #### `-r`
   > 使用 `requirements.txt` 安裝套件，並更新 `pyproject.toml` 和 `uv.lock`
@@ -284,7 +287,7 @@
   ```
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
-  |會下載到 global cache，若太久沒清會很胖，要定期清|
+  |會下載到快取，若太久沒清會很胖，要定期清|
 
 
 ### `tree`：依賴樹
@@ -349,30 +352,46 @@
   |uv 為避免重複下載，採取激進快取策略，若太久沒清會很胖，要定期清|
 
 + #### `dir`
-  > 快取檔案所在目錄 (通常是 `%LOCALAPPDATA%/uv/cache`)
-
+  > 快取目錄 (通常是 `%LOCALAPPDATA%/uv/cache`)
+  + 補充
+    ```py
+    cache
+    ├── archive-v0/      # 套件 hardlink (與虛擬環境 hardlink 指向同塊存放套件的空間)
+    ├── interpreter-v4/  # ...
+    ├── sdists-v9/       # ...
+    ├── simple-v18/      # ...
+    ├── wheels-v5/       # ...
+    ├── .gitignore
+    ├── .lock
+    └── CACHEDIR.TAG
+    ```
 + #### `clean`
-  > 清除 - 清除整個快取
+  > 清除 - 清除所有快取
 
 + #### `prune`
-  > 修剪 - 僅清除沒被任何專案用到的快取
+  > 修剪 - 清除舊版快取
   
   |🔮 <span class="important">IMPORTANT</span>|
   |:---|
-  |「修剪」也太聰明了吧？它怎麼知道我有沒有用到？|
-  |四散各地的專案，在各自的虛擬環境安裝套件時，套件首先會被放置在硬碟空間中，<br>接著以快取檔案 hardlink (在 `%LOCALAPPDATA%/uv/cache` 目錄內) 指向這塊硬碟空間<br>(第一次安裝時需要)，<br>再以虛擬環境 hardlink (在專案的 `.venv` 目錄內) 指向這塊硬碟空間<br>(每個專案安裝時需要)，<br>不只省下安裝的網路耗時，也省下硬碟空間。|
-  |而這塊硬碟空間會知道自己被多少個 hardlink 指到，<br>只要某個套件的虛擬環境 hardlink 歸 0 時，就能知道它是那個需要被修剪掉的套件。 |
- 
+  |「修剪」中[舊版快取](https://github.com/astral-sh/uv/issues/10153#issuecomment-2564360859)的意思是，<mark>uv 因實作調整，而遺留下來的舊版目錄結構</mark>。 |
+  |比如在快取目錄中，有類似 `wheels-v5` 這樣的快取，它的上一版可能就是 `wheel-v4`，當 uv 版本更新時，這些舊版快取就會變成孤兒。 |
 
 
-### `build` / `publish`：構建 / 發布套件
+  |🚨 <span class="caution">CAUTION</span>|
+  |:---|
+  | 所以 `uv cache prune` 和 `pnpm store prune` 實作上並不一樣。|
+  | pnpm 可以知道 hardlink 的 link count，然後去自動清理；uv 並沒有選擇這麼做。|
+  | 根據 [uv 的 contributer 所述](https://github.com/astral-sh/uv/issues/16008#issuecomment-3333296869)，他們針對快取修剪這塊還在討論中，她認為 pnpm 的未用及刪不是好主意，她更傾向 LRU 的作法 (下載熱點保留、被冷落的修剪掉) |
 
-  > `uv build` + `uv publish`，就這麼簡單。\
-  > 唯獨 publish 時須注意兩點：
-  > 1. 發布到不同套件源 (比如 testpypi)
-      > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index：指定套件源))。
-  > 2. 會問你 username 和 password，但現已改成使用 API token 登入
-      > 因此 username 你要輸入 `__token__`，password 再輸入 API token 即可。
+### `build` ：構建套件
+
+
+### `publish`：發布套件
+
+1. 發布到不同套件源 (比如 testpypi)
+    > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index：指定套件源)
+2. 會問你 username 和 password (但現在不是改用 API token 登入？)
+    > 因此 username 要輸入 `__token__`，password 再輸入 API token 即可
 
 
 ### `pip`：相容 pip 介面
@@ -402,7 +421,7 @@
   ```
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
-  |會下載到 global cache，若太久沒清會很胖，要定期清|
+  |會下載到快取，若太久沒清會很胖，要定期清|
 
 + #### `install` / `uninstall`
   > 安裝 / 移除
