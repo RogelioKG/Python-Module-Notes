@@ -296,6 +296,7 @@
 
 ### `python`：多版本
 
+
 + #### `list`
   > 列出可用 Python 版本
   ```
@@ -307,17 +308,21 @@
   ```
   uv python install 3.12.0
   ```
+  |📘 <span class="note">NOTE</span>|
+  |:---|
+  |Python 直譯器會被放在 `~/.local/bin` (全域可見)|
+  |<mark>在全域可使用 `python3.xx` 把 REPL 互動式環境叫出來</mark>|
 
 + #### `pin`
   > 切換 Python 版本 (更改 `.python-version`)
 
   + ` `
-    > 專案內切換
+    > 專案內的 Python 版本
     ```
     uv python pin 3.11
     ```
   + `--global`
-    > 全域切換
+    > 之後 init 專案的 Python 版本
     ```
     uv python pin 3.11 --global
       ```
@@ -411,7 +416,7 @@
 
 ### `tool`：工具
 
-> 工具是一種提供 CLI 的執行檔。\
+> 工具是一種 CLI 執行檔。\
 > 會被安裝在獨立環境 (非專案內)，以避免受不相關的相依套件影響。
 
 + #### `run`
@@ -419,9 +424,9 @@
   ```
   uv tool run ruff check
   ```
-  |🚨 <span class="caution">CAUTION</span>|
+  |📘 <span class="note">NOTE</span>|
   |:---|
-  |會下載到快取，若太久沒清會很胖，要定期清|
+  |CLI 執行檔會被放在 `~/.local/bin` (全域可見)|
 
 + #### `install` / `uninstall`
   > 安裝 / 移除
@@ -659,6 +664,38 @@
   [build-system]
   requires = ["uv_build>=0.9.5,<0.10.0"]
   build-backend = "uv_build"
+  ```
+
+## Packaging
+
+### multi-version
+  > 利用 `uv run --python <version>` 的特性，\
+  > 完全可以寫個小腳本，達成套件的 Python 多版本測試，\
+  > 而不需要再仰賴 [tox](https://tox.wiki/en/4.32.0/) 之類的工具。
+  ```ps
+  # PowerShell
+  $ErrorActionPreference = "Stop"
+
+  $pyVersions = @("3.13", "3.12", "3.11", "3.10", "3.9", "3.8")
+
+  foreach ($v in $pyVersions) {
+      Write-Host ">>> Testing with Python $v" -ForegroundColor Cyan
+
+      # 這裡可執行 pytest 之類的單元測試
+      uv run --python $v -m src.llm_crawler.examples
+
+      if ($LASTEXITCODE -eq 0) {
+          Write-Host "✅ Python $v tests passed`n" -ForegroundColor Green
+      }
+      else {
+          Write-Host "❌ Python $v tests failed`n" -ForegroundColor Red
+          exit 1
+      }
+
+      Start-Sleep -Seconds 1
+  }
+
+  Write-Host "🎉 All versions tested successfully!" -ForegroundColor Green
   ```
 
 ## Run with
