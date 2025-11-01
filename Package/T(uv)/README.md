@@ -2,6 +2,10 @@
 
 [![RogelioKG/uv](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/uv)
 
+|📘 <span class="note">NOTE</span>|
+|:---|
+|待完成主題：`pypi-server`、[`uv auth`](https://docs.astral.sh/uv/concepts/authentication/cli/)|
+
 ## References
 + 📑 [**Documentation - uv**](https://docs.astral.sh/uv/)
 + 🔗 [**使用 uv 管理 Python 環境**](https://dev.to/codemee/shi-yong-uv-guan-li-python-huan-jing-53hg)
@@ -187,9 +191,11 @@
 
 
 ### `add` ：安裝套件
-|🚨 <span class="caution">CAUTION</span>|
+
+
+|📗 <span class="tip">TIP</span>|
 |:---|
-|會下載到快取，若太久沒清會很胖，要定期清|
+|有 wheel 包的話，也可以直接安裝：`uv add ???.whl`|
 
 + #### `-r`
   > 使用 `requirements.txt` 安裝套件，並更新 `pyproject.toml` 和 `uv.lock`
@@ -289,6 +295,14 @@
   |:---|
   |會下載到快取，若太久沒清會很胖，要定期清|
 
++ #### `--python`
+  > 暫時使用某版本 Python 執行
+  ```
+  uv run --python 3.13.7 main.py
+  ```
+  |📗 <span class="tip">TIP</span>|
+  |:---|
+  |開發套件時，拿來多版本測試超好用！|
 
 ### `tree`：依賴樹
 > 展示套件們的依賴關係
@@ -471,9 +485,11 @@
 
 ### `--index`：指定套件源
 
-  + 可定義不同套件源，下指令時就可以加上 `--index <name>` 選擇套件源
+  + `tool.uv.index`：套件源 
     ```toml
     # pyproject.toml
+    
+    # 下指令時就可以加上 `--index <name>` 選擇套件源
     [[tool.uv.index]]
     name = "pypi"
     url = "https://pypi.org/simple/"
@@ -485,7 +501,7 @@
     publish-url = "https://test.pypi.org/legacy/"
     ```
 
-  + 要求某套件一定要從指定套件源下載
+  + `tool.uv.sources`：某套件需從【指定套件源】下載
     ```toml
     [project]
     dependencies = ["torch"]
@@ -504,7 +520,39 @@
     name = "pytorch-cu124"
     url = "https://download.pytorch.org/whl/cu124"
     ```
-  + 本地套件源
+    > server：或者你架一個 API endpoint...
+    > ```
+    > .
+    > └─ index
+    >    └─ llm-crawler
+    >       ├─ llm_crawler-0.1.0-py3-none-any.whl
+    >       └─ index.html
+    > ```
+    > 
+    > server：在頂層目錄
+    > ```
+    > python -m http.server 8000
+    > ```
+    >
+    > server：在 `index.html` 放上 wheel 檔連結
+    > ```html
+    > <a href="llm_crawler-0.1.0-py3-none-any.whl">
+    >   llm_crawler-0.1.0-py3-none-any.whl
+    > </a><br>
+    > ```
+    > client：index url 這樣指定
+    > ```toml
+    > [[tool.uv.index]]
+    > name = "rogeliokg-index"
+    > url = "http:/192.168.137.53/index"
+    > # 你的 server 如果有 public IP 也是可以的
+    > ```
+    > client：🪄 太神奇了！傑克！
+    > ```
+    > uv add llm_crawler
+    > ```
+
+  + 某套件從【本地 wheel 檔】下載
     ```toml
     [project]
     dependencies = ["rogeliokg-core", "rogeliokg-cloud"]
