@@ -496,6 +496,25 @@
 
 
 
+### `SupportsX`：魔術方法協議
++ 說明
+  + 表示某個擁有 `__index__` 魔術方法的類別
++ 範例
+  ```py
+  # typing 內部實作
+  @runtime_checkable
+  class SupportsIndex(Protocol):
+
+      __slots__ = ()
+
+      @abstractmethod
+      def __index__(self) -> int:
+          pass
+  ```
+
+
+
+
 ### `TypeGuard`：呃...
 + 說明
   + [PEP-647] (2020/10/07)
@@ -560,6 +579,7 @@
 
   ```
   ```ts
+  // TypeScript 的 TypeGuard 範例
   type Dog = { kind: "dog"; bark(): void };
   type Cat = { kind: "cat"; meow(): void };
   type Animal = Dog | Cat;
