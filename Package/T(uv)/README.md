@@ -2,10 +2,6 @@
 
 [![RogelioKG/uv](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/uv)
 
-|📘 <span class="note">NOTE</span>|
-|:---|
-|待完成主題：`pypi-server`、[`uv auth`](https://docs.astral.sh/uv/concepts/authentication/cli/)|
-
 ## References
 + 📑 [**Documentation - uv**](https://docs.astral.sh/uv/)
 + 🔗 [**使用 uv 管理 Python 環境**](https://dev.to/codemee/shi-yong-uv-guan-li-python-huan-jing-53hg)
@@ -58,6 +54,17 @@
 |uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
 |uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
 
+## Resolving
+
+| 類型 | 套件共用策略 | 套件多版本共存 | 範例 |
+| --- | --- | --- | --- |
+| **Tree** | 不共用 | ✅ 允許 | `npm v2` |
+| **Partial Graph** | 儘量共用，衝突時允許多版本 | ✅ 允許 | `npm v3+` / `pnpm` (peer dependency 衝突) |
+| **Full Graph** | 所有套件，共用唯一版本 | ❌ 不允許 | `uv` / `pip` / `pnpm` |
+
+> Full Graph 版本求解，本質上是一個 SAT 問題，\
+> 通常採用 SAT solver 來嘗試找解。\
+> uv 使用的是一種特別的 solver：[PubGrub](https://github.com/pubgrub-rs/pubgrub)。
 
 ## Commands
 
@@ -128,7 +135,7 @@
             ├── py.typed
             └── __init__.py
     ```
-  + `pyproject.toml`（build 相關資訊儲存於此）
+  + `pyproject.toml` (build 相關資訊儲存於此)
     ```toml
     [project]
     ...
@@ -138,7 +145,7 @@
     build-backend = "uv_build"
     ```
   + `uv sync` 測試安裝
-    + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能（就如同 `pip install -e .`）
+    + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能 (如同 `pip install -e .`)
     + 原理：把 `src/` 目錄加入 `sys.path`
   + user 實際安裝
     + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
@@ -156,7 +163,7 @@
         └── project_package/
             └── __init__.py
     ```
-  + `pyproject.toml`（build 相關資訊儲存於此）
+  + `pyproject.toml` (build 相關資訊儲存於此)
     ```toml
     [project.scripts]
     rogeliokg-core = "rogeliokg_core:main" 
@@ -168,7 +175,7 @@
     build-backend = "uv_build"
     ```
   + `uv sync` 測試安裝
-    + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能（就如同 `pip install -e .`）
+    + 在專案內「安裝」你寫的這個套件，你可以一邊開發、一邊測試功能 (如同 `pip install -e .`)
     + 原理：把 `src/` 目錄加入 `sys.path`
   + user 實際安裝
     + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
@@ -197,6 +204,10 @@
 |:---|
 |有 wheel 包的話，也可以直接安裝：`uv add ???.whl`|
 
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+|在某些 OS 中，點擊 wheel 檔是有可能直接安裝的<br>(<mark>傳給別人前請務必詳細說明，不要直接點擊！</mark>)|
+
 + #### `-r`
   > 使用 `requirements.txt` 安裝套件，並更新 `pyproject.toml` 和 `uv.lock`
   ```
@@ -204,8 +215,8 @@
   ```
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
-  |  若 uv 想使用同事給 `requirements.txt` 安裝套件，只能把所有套件都安裝進來。<br>而無法猜測同事原先使用 `pip install` 哪些套件。 |
-  + 使用 pip (對 pip 而言，是同一個結構)
+  |  若想用同事給的 `requirements.txt`，使用 uv 安裝套件，只能把所有套件都安裝進來。<br><mark>無法得知同事原先使用 `pip install` 哪些套件</mark>。 |
+  + 使用 pip (對它而言是<mark>同一個結構</mark>)
     + 安裝 `requests`
       ```
       certifi==2025.10.5
@@ -222,7 +233,7 @@
       requests==2.32.5
       urllib3==2.5.0
       ```
-  + 使用 uv (對 uv 而言，卻是不同結構)
+  + 使用 uv (對它而言卻是<mark>不同結構</mark>)
     + 安裝 `requests`
       ```
       temp v0.1.0
@@ -233,14 +244,14 @@
           └── urllib3 v2.5.0
       ```
     + 安裝 `urllib3` 和 `requests`
-      > 注意到了嗎，你手動安裝的套件，都在頂層
+      > 注意到了嗎，你手動安裝的套件，會在頂層。
       ```
       temp v0.1.0
       ├── requests v2.32.5
       │   ├── certifi v2025.10.5
       │   ├── charset-normalizer v3.4.4
       │   ├── idna v3.11
-      │   └── urllib3 v2.5.0
+      │   └── urllib3 v2.5.0 (*)
       └── urllib3 v2.5.0
       ```
 
@@ -271,7 +282,7 @@
 
 ### `remove`：移除套件
 
-> 移除套件時，會自動解析並移除未使用的相依套件。
+> 移除套件時，會自動解析並移除未使用的依賴套件。
 
 + #### `--no-sync`
   > 不自動同步
@@ -431,7 +442,7 @@
 ### `tool`：工具
 
 > 工具是一種 CLI 執行檔。\
-> 會被安裝在獨立環境 (非專案內)，以避免受不相關的相依套件影響。
+> 會被安裝在獨立環境 (非專案內)，以避免受不相關的依賴套件影響。
 
 + #### `run`
   > 暫時下載工具 (可簡寫 `uvx`)
@@ -466,7 +477,10 @@
   ...
 
 
-### `generate-shell-completion` 指令自動補全
+### `auth`：套件上傳、下載需授權
++ 請參考：[PyPI Server](https://hackmd.io/@RogelioKG/pypi-server)
+
+### `generate-shell-completion`：指令自動補全
 
 + 將 uv 的自動補全腳本，注入到初始化腳本內
   ```
@@ -483,92 +497,117 @@
 ## Options
 
 
-### `--index`：指定套件源
 
-  + `tool.uv.index`：套件源 
-    ```toml
-    # pyproject.toml
-    
-    # 下指令時就可以加上 `--index <name>` 選擇套件源
-    [[tool.uv.index]]
-    name = "pypi"
-    url = "https://pypi.org/simple/"
-    publish-url = "https://upload.pypi.org/legacy/"
-
-    [[tool.uv.index]]
-    name = "testpypi"
-    url = "https://test.pypi.org/simple/"
-    publish-url = "https://test.pypi.org/legacy/"
-    ```
-
-  + `tool.uv.sources`：某套件需從【指定套件源】下載
-    ```toml
-    [project]
-    dependencies = ["torch"]
-
-    [tool.uv.sources]
-    torch = [
-      { index = "pytorch-cu118", marker = "sys_platform == 'darwin'"},
-      { index = "pytorch-cu124", marker = "sys_platform != 'darwin'"},
-    ]
-
-    [[tool.uv.index]]
-    name = "pytorch-cu118"
-    url = "https://download.pytorch.org/whl/cu118"
-
-    [[tool.uv.index]]
-    name = "pytorch-cu124"
-    url = "https://download.pytorch.org/whl/cu124"
-    ```
-    > server：或者你架一個 API endpoint...
-    > ```
-    > .
-    > └─ index
-    >    └─ llm-crawler
-    >       ├─ llm_crawler-0.1.0-py3-none-any.whl
-    >       └─ index.html
-    > ```
-    > 
-    > server：在頂層目錄
-    > ```
-    > python -m http.server 8000
-    > ```
-    >
-    > server：在 `index.html` 放上 wheel 檔連結
-    > ```html
-    > <a href="llm_crawler-0.1.0-py3-none-any.whl">
-    >   llm_crawler-0.1.0-py3-none-any.whl
-    > </a><br>
-    > ```
-    > client：index url 這樣指定
-    > ```toml
-    > [[tool.uv.index]]
-    > name = "rogeliokg-index"
-    > url = "http:/192.168.137.53/index"
-    > # 你的 server 如果有 public IP 也是可以的
-    > ```
-    > client：🪄 太神奇了！傑克！
-    > ```
-    > uv add llm_crawler
-    > ```
-
-  + 某套件從【本地 wheel 檔】下載
-    ```toml
-    [project]
-    dependencies = ["rogeliokg-core", "rogeliokg-cloud"]
-
-    [tool.uv.sources]
-    rogeliokg-core = [{ path = "C:/.../rogeliokg_core-0.1.0-py3-none-any.whl" }]
-    rogeliokg-cloud = [{ path = "C:/.../rogeliokg_cloud-0.1.0-py3-none-any.whl" }]
-    ```
-
-
-### `--group` / `--no-group`：指定相依套件組
-+ 將 ruff 安裝到 dev groups
+### `--group` / `--no-group`：optional 依賴套件組 (開發者)
+> 詳見 [dependency-groups](#dependency-groups：optional-依賴套件組-開發者)
++ 開發階段時，將 ruff 安裝到 dev 依賴套件組
     ```
     uv add ruff --group dev
     ```
++ 開發階段時，安裝整個 dev 依賴套件組
+    ```
+    uv sync --group dev
+    ```
+### `--index`：額外套件源
+> 給定 url。此選項可重複多次，指定多個額外 index。
 
+### `--default-index`：預設套件源
+> 給定 url。此為是優先度最高的 index。
+
+### `--index-strategy`：多套件源選定策略
+
+| 策略 | `first-index` | `unsafe-first-match` | `unsafe-best-match` |
+| --- | --- | --- | --- |
+| **行為** | 依 index 優先序解析，選擇優先序高的解析成功 index (預設) | 對每個依賴套件，依 index 優先序尋找版本，前一個 index 都沒合適版本，才換下一個 index | 對每個依賴套件，無視優先序從所有 index 找，若有多個則取優先序高的 index |
+| **說明** | ✅ 依賴套件皆來自同 index | ☢️ 依賴套件可來自不同 index  | ☢️ 依賴套件可來自不同 index |
+
+| ☢️ <span class="warn">WARNING</span>|
+| :------------------------------------- |
+| <mark>混用套件源</mark>之所以被定調為 <mark>unsafe</mark>：<br>1. 通常不是 developer 在開發階段預期的情況，可能會出現不兼容的情況<br>2. 同名冒充套件的供應鏈攻擊 |
+
+
+
+## Project Metadata
+> 詳見 [uv - project metadata](https://docs.astral.sh/uv/reference/settings/#project-metadata)
+
+### `project.optional-dependencies`：optional 依賴套件組 (使用者)
+> PEP 621 規範。\
+> 使用者可決定是否安裝的 optional 依賴：\
+> `uv add llm-crawler[proxy]`
+
+|📗 <span class="tip">TIP</span>|
+|:---|
+|使用者若使用 wheel 安裝，也是可以的。<br>例如：`uv add ./llm_crawler-0.4.1-py3-none-any.whl[proxy]`|
+
+```toml
+[project]
+name = "llm-crawler"
+version = "0.1.0"
+dependencies = [
+    "selenium",
+    "webdriver-manager",
+]
+
+[project.optional-dependencies]
+proxy = [
+    "swiftshadow>=0.3.0",
+]
+```
+
+### `tool.uv.dependency-groups`：optional 依賴套件組 (開發者)
+> uv 擴充。\
+> 開發者可決定是否安裝的 optional 依賴：\
+> `uv add --group lint`
+```toml
+[dependency-groups]
+dev = [
+  "pytest"
+]
+lint = [
+  "ruff"
+]
+```
+
+### `tool.uv.default-groups`：預設安裝 optional 依賴套件組 (開發者)
+> ...
+```toml
+[tool.uv]
+default-groups = ["lint"]
+```
+
+### `tool.uv.index`：額外套件源
+> ...
+```toml
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple/"
+publish-url = "https://upload.pypi.org/legacy/"
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+```
+
+### `tool.uv.sources`：uv - 此套件需從【指定套件源】下載
+> `explicit = true`
+> + 代表僅此套件的 wheel 檔從【指定套件源】抓取
+> + 其餘依賴套件的 wheel 檔從【預設套件源】抓取
+```toml
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu124"},
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+```
 
 ## Project Structures
 
@@ -615,11 +654,11 @@
             └── ...
     ```
 + 優勢
-  + 套件變成類似插件（addons）一樣
+  + 套件變成類似插件 (addons) 一樣
   + 根據需求下載需要的插件，每個插件裡包含不同功能的子套件
   + 插件本身也能依賴其他插件，這樣就能包成一個功能更強大的插件
   + 對於 developer 而言，每個插件可分配一個團隊開發
-  + 對於 user 而言，所有插件仍歸屬同一個 namespace（統一品牌體驗）
+  + 對於 user 而言，所有插件仍歸屬同一個 namespace (統一品牌體驗)
 
 + 配置
   + `pyproject.toml` 
@@ -654,11 +693,11 @@
   + [**Using workspaces - uv**](https://docs.astral.sh/uv/concepts/projects/workspaces)
   + [**是 Ray 不是 Array - Monorepo**](https://israynotarray.com/other/20240413/3177435894/)
 + 簡單來說就是 <mark>monorepo</mark>
-  + <mark>每個小專案（package）都有自己的設定</mark>（`pyproject.toml`）
-  + 但由<mark>頂層專案（workspace）統一管理所有依賴</mark>（`uv.lock`）
+  + <mark>每個小專案 (package) 都有自己的設定</mark>(`pyproject.toml`)
+  + 但由<mark>頂層專案 (workspace) 統一管理所有依賴</mark>(`uv.lock`)
 + 優勢
-  + 每個小專案都可以作為套件發布（不像 monolith 是單純的模組）
-  + CI / CD 根據依賴 DAG 進行部分測試（不像 monolith 改一行就要全部重測）
+  + 每個小專案都可以作為套件發布 (不像 monolith 是單純的模組)
+  + CI / CD 根據依賴 DAG 進行部分測試 (不像 monolith 改一行就要全部重測)
 + 專案目錄
   ```py
   albatross # 頂層專案
@@ -767,3 +806,4 @@
 
 + Formatter 功能：[ruff](https://hackmd.io/@RogelioKG/ruff)
 + Precommit 功能：[pre-commit](https://hackmd.io/@RogelioKG/pre-commit)
+
