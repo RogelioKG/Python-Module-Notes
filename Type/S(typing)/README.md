@@ -599,15 +599,25 @@
 
 ## Functions
 
+### `cast`
++ 說明
+  + 轉型 (為了讓 type checker 閉嘴 ==)
++ 範例
+  ```py
+  metadata = cast(dict[str, Any], metadata)
+  ```
+
 ### `get_origin`
-```py
-print(get_origin(list[int])) # <class 'list'>
-```
++ 範例
+  ```py
+  print(get_origin(list[int])) # <class 'list'>
+  ```
 
 ### `get_args`
-```py
-print(get_args(list[int])) # (<class 'int'>,)
-```
++ 範例
+  ```py
+  print(get_args(list[int])) # (<class 'int'>,)
+  ```
 
 
 ### `final`：無法繼承、無法覆寫
