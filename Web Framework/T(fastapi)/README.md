@@ -8,6 +8,7 @@
 ![](https://raw.githubusercontent.com/jason810496/iThome2023-FastAPI-Tutorial/Images/assets/Day02/banner.png)
 
 ## References
++ 🔗 [**Doc - FastAPI**](https://fastapi.tiangolo.com/)
 + 🔗 [**IT 邦幫忙 - FastAPI 如何 Fast ？**](https://ithelp.ithome.com.tw/users/20148985/ironman/6772)
 
 ## Toolkits
@@ -17,6 +18,15 @@
 + **FastAPI**：ASGI 的 Web App 框架
   + 依賴 **Starlette** 和 **Pydantic**
   + 可以自動生成文檔
+
+## Note
+|🔮 <span class="important">IMPORTANT</span>|
+|:---|
+|前端在發送 request 時，browser 會開啟一個 ephemeral port 作為對外溝通的窗口|
+
+|🔮 <span class="important">IMPORTANT</span>|
+|:---|
+|前端在發送 request 時，browser 會開啟一個 ephemeral port 作為對外溝通的窗口|
 
 ## Directory Structure
 ```py
@@ -44,99 +54,46 @@
 ```
 
 ## API document
+
+### Image
 ![](https://hackmd.io/_uploads/rJOpvhe1el.png)
 ![](https://hackmd.io/_uploads/HJ4ag6lylg.png)
 
 
-## Usage
-
-
-### `Depends`
-+ 依賴注入
-  ```py
-  async def common_params(skip: int = 0, limit: int = 100):
-      return {"skip": skip, "limit": limit}
-
-  @app.get("/items/")
-  async def read_items(commons: Annotated[dict, Depends(common_params)]):
-      return commons
-  ```
-  |🚨 <span class="caution">CAUTION</span>|
-  |:---|
-  |只能用於 API endpoint 的 handle funtion 內的 `Annotated` 註釋<br>（想必是在 app decorator 做了一些處理，詳見 [Annotated 黑魔法](https://hackmd.io/@RogelioKG/pythons_flying_circus/%2F%40RogelioKG%2Ftyping#Annotated-%E8%A8%BB%E9%87%8B)）。|
-  |當然你也能用三方庫 [fastapi-injectable](https://github.com/JasperSui/fastapi-injectable) 的 `@injectable`，<br>讓它脫離 app decorator 也能運作。|
-
-  |📗 <span class="tip">TIP</span>|
-  |:---|
-  |`Annotated[Type, Depends()]` 等價於 `Annotated[Type, Depends(Type)]`|
-  |也就是說當給定 `None` 時，自動帶入前方型態|
-
-+ <mark>隔山打牛</mark> (對於一時不可見的依賴，會自動往外去尋找)
-  ```py
-  def get_double(n: int) -> int:
-      return n * 2
-
-  # 在 /test?n=2 時，會回傳 4 🚩
-  # 注意：n 可以不用明確寫在參數裡 (太神奇了我的傑克🪄)
-  @app.post("/test")
-  async def test(doubled_number: Annotated[int, Depends(get_double)]):
-      return doubled_number
-  ```
-
-### `Query`
-
-```py
-@app.get("/items") # 讀取 request 中 query 的 numbers 參數
-def read_items(numbers):
-    return {"numbers": numbers}
-```
-
-### `Cookie`
-[Cookie - Samesite settings](https://medium.com/%E7%A8%8B%E5%BC%8F%E7%8C%BF%E5%90%83%E9%A6%99%E8%95%89/%E5%86%8D%E6%8E%A2%E5%90%8C%E6%BA%90%E6%94%BF%E7%AD%96-%E8%AB%87-samesite-%E8%A8%AD%E5%AE%9A%E5%B0%8D-cookie-%E7%9A%84%E5%BD%B1%E9%9F%BF%E8%88%87%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85-6195d10d4441)
-
-```py
-@app.get("/login") # 設定 cookie "token"
-def login(response: Response):
-    response.set_cookie(key="token", value="my-secret", httponly=True)
-    return {"message": "logged in"}
-
-@app.get("/logout") # 刪除 cookie "token"
-def logout(response: Response):
-    response.delete_cookie(key="token")
-    return {"message": "logged out"}
-
-@app.get("/profile") # 讀取 request 中的 cookie "token"
-def profile(token: Annotated[str, Cookie()]):
-    if token != "my-secret":
-        return {"error": "unauthorized"}
-    return {"message": "Welcome back!"}
-```
-
-### `Header`
-```py
-@app.get("/read-header") # 讀取 request 中 header 的 User-Agent 欄位
-def read_header(user_agent: Annotated[str | None, Header()] = None):
-    return {"User-Agent": user_agent}
-```
-
-### `Form`
-```py
-class FormData(BaseModel):
-    username: str
-    password: str
-    model_config = {"extra": "forbid"}  # 不允許出現其他欄位
-
-# Form 的 media_type 選項
-# 預設使用 application/x-www-form-urlencode
-# 也可指定 multipart/form-data
-@app.post("/test/")
-async def test(data: Annotated[FormData, Form()]):
-    return data
-```
-
-### `@app.HTTP_METHOD(...)`
-+ `response_model=`：response 採用的 schema
+### `@app.method(...)`
 + `deprecated=`：棄用
++ `response_model=`：response 採用的 schema
+  ```ps
+  curl -X POST "http://127.0.0.1:8000/items/" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "name": "antigravity",
+    "price": 99.9,
+    "tags": ["google"]
+  }'
+  ```
+  ```py
+  class Item(BaseModel):
+      name: str
+      description: str | None = None
+      price: float
+      tax: float | None = None
+      tags: list[str] = []
+
+
+  @app.post("/items/", response_model=Item)
+  async def create_item(item: Item) -> Item:
+      return item
+  ```
+  ```json
+  {
+    "name": "antigravity",
+    "description": null,
+    "price": 99.9,
+    "tax": null,
+    "tags": ["google"]
+  }
+  ```
 + `dependencies=`：先行依賴
   ```py
   def get_double(n: int) -> int:
@@ -153,20 +110,572 @@ async def test(data: Annotated[FormData, Form()]):
       return doubled_number
   ```
 
+## Tutorial
+
+### Path Parameters
+
++ 範例
+  ```sh
+  curl "http://127.0.0.1:8000/items/5"
+  ```
+  ```py
+  @app.get("/items/{item_id}")
+  async def read_item(item_id: int):
+      return {"item_id": item_id}
+  ```
++ 範例：`Path`
+  ```sh
+  curl "http://127.0.0.1:8000/items/5"
+  ```
+  ```py
+  @app.get("/items/{item_id}")
+  async def read_item(item_id: Annotated[int, Path()]):
+      return {"item_id": item_id}
+  ```
+
+### Query Parameters
+
++ 範例
+  ```sh
+  curl "http://127.0.0.1:8000/items/5"
+  ```
+  ```py
+  # http://127.0.0.1:8000/items/?skip=0&limit=4
+  @app.get("/items/")
+  async def read_items(skip: int = 0, limit: int = 4):
+      fake_items_db = [
+          {"id": 1, "name": "apple"},
+          {"id": 2, "name": "banana"},
+          {"id": 3, "name": "carrot"},
+          {"id": 4, "name": "durian"},
+          {"id": 5, "name": "egg"},
+      ]
+      return fake_items_db[skip : skip + limit]
+  ```
++ 範例：`Query`
+  ```ps
+  curl "http://127.0.0.1:8000/search?keyword=ap&limit=1"
+  ```
+  ```py
+  @app.get("/search")
+  async def search_products(
+      keyword: Annotated[str | None, Query(min_length=1, max_length=30)] = None,
+      limit: Annotated[int, Query(ge=1, le=20)] = 10,
+  ):
+      products = ["apple", "banana", "cherry", "grape"]
+
+      if keyword:
+          products = [p for p in products if keyword.lower() in p.lower()]
+
+      return {"count": len(products), "results": products[:limit]}
+  ```
++ 範例：`Query` + `BaseModel`
+  ```ps
+  curl "http://127.0.0.1:8000/items/?limit=40&offset=60&tags=red&tags=blue"
+  ```
+  ```py
+  class FilterParams(BaseModel):
+      limit: int = Field(100, gt=0, le=100)
+      offset: int = Field(0, ge=0)
+      order_by: Literal["created_at", "updated_at"] = "created_at"
+      tags: list[str] = []
+
+  @app.get("/items/")
+  async def read_items(filter_query: Annotated[FilterParams, Query()]):
+      return filter_query
+  ```
+
+### Request Body
++ 說明
+  |🔮 <span class="important">IMPORTANT</span>|
+  |:---|
+  | <mark>直接使用 `BaseModel`</mark>，而未用 `Annotated` 加額外標註 (`Path()` / `Query()` / `Header()`)。<br>FastAPI 一律當做 reqest body <span style="color: gray">(注意：`GET` 方法沒有 reqest body)</span>。 |
++ 範例
+  ```ps
+  curl -X POST "http://127.0.0.1:8000/items/" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "name": "apple",
+    "price": 9.9
+  }'
+  ```
+  ```py
+  class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+  @app.post("/items/")
+  async def create_item(item: Item):
+      return item
+  ```
++ 範例：`Body` + `embed=True`
+  ```ps
+  curl -X POST "http://127.0.0.1:8000/items/" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "item": {
+      "name": "apple",
+      "price": 9.9
+    }
+  }'
+  ```
+  ```py
+  class Item(BaseModel):
+      name: str
+      description: str | None = None
+      price: float
+      tax: float | None = None
+
+
+  @app.post("/items/")
+  async def create_item(item: Annotated[Item, Body(embed=True)]):
+      return item
+  ```
++ 範例：多參數
+  ```ps
+  curl -X PUT "http://127.0.0.1:8000/items/123" `
+    -H "Content-Type: application/json" `
+    -d '{
+      "item": {
+        "name": "Foo",
+        "description": "The pretender",
+        "price": 42.0,
+        "tax": 3.2
+      },
+      "user": {
+        "username": "dave",
+        "full_name": "Dave Grohl"
+      },
+      "importance": 5
+    }'
+  ```
+  ```py
+  class Item(BaseModel):
+      name: str
+      description: str | None = None
+      price: float
+      tax: float | None = None
+
+
+  class User(BaseModel):
+      username: str
+      full_name: str | None = None
+
+
+  @app.put("/items/{item_id}")
+  async def update_item(
+      item_id: int,
+      item: Item,
+      user: User,
+      importance: Annotated[int, Body()],
+  ):
+      results = {
+          "item_id": item_id,
+          "item": item,
+          "user": user,
+          "importance": importance,
+      }
+      return results
+  ```
+
+
+### `Cookie`
++ 範例
+  ```ps
+  # 獲取 cookie，儲存在 cookies.txt
+  curl -X GET -i -c "cookies.txt" "http://127.0.0.1:8000/login"
+  ```
+  ```ps
+  # 將 cookies.txt 的 cookie 附帶於請求中
+  curl -X GET -b "cookies.txt" "http://127.0.0.1:8000/profile" 
+  ```
+  ```py
+  @app.get("/login") # 設定 cookie "token"
+  def login(response: Response):
+      response.set_cookie(key="token", value="my-secret", httponly=True)
+      return {"message": "logged in"}
+
+  @app.get("/logout") # 刪除 cookie "token"
+  def logout(response: Response):
+      response.delete_cookie(key="token")
+      return {"message": "logged out"}
+
+  @app.get("/profile") # 讀取 request 中的 cookie "token"
+  def profile(token: Annotated[str, Cookie()]):
+      if token != "my-secret":
+          return {"error": "unauthorized"}
+      return {"message": "Welcome back!"}
+  ```
+
+
+### `Header`
++ 範例
+  ```py
+  @app.get("/read-header") # 讀取 request 中 header 的 User-Agent 欄位
+  def read_header(user_agent: Annotated[str | None, Header()] = None):
+      return {"User-Agent": user_agent}
+  ```
+
+### `Form`
++ 範例：`Content-Type: application/x-www-form-urlencode`
+  ```ps
+  curl -X POST "http://localhost:8000/test/" `
+    -H "Content-Type: application/x-www-form-urlencoded" `
+    -d "username=alice&password=123456"
+  ```
+  ```py
+  class FormData(BaseModel):
+      username: str
+      password: str
+      model_config = {"extra": "forbid"}  # ✅ 不允許出現其他欄位
+
+  # Form() # 🚀 夾帶檔案
+  @app.post("/test/")
+  async def test(data: Annotated[FormData, Form()]): # 預設
+      return data
+  ```
++ 範例：`Content-Type: multipart/form-data`
+  > 需要套件：<mark>python-multipart</mark>
+  ```ps
+  # 
+  # 註：@ 告訴 curl 這是路徑，而非字串
+  curl -X POST "http://localhost:8000/test/" `
+    -F "username=alice" `
+    -F "password=123456" `
+    -F "file=@./doge_gopnik_pixel.png"
+  ```
+  ```py
+  class FormData(BaseModel):
+      username: str
+      password: str
+      model_config = {"extra": "forbid"}
+
+
+  @app.post("/test/")
+  async def test(
+      username: Annotated[str, Form()],
+      password: Annotated[str, Form()],
+      file: UploadFile | None = None,
+      # 或寫成 Annotated[UploadFile, File()]
+  ):
+      data = FormData(username=username, password=password)
+      return {
+          "form": data,
+          "filename": file.filename if file else None,
+      }
+  ```
+
+
+
+### `Depends`
++ 說明
+  + 依賴注入
+  + 注入方式：一個 Callable 物件
+    > `Annotated[..., Depends(Callable)]` \
+    > `Annotated[Type, Depends()]` 等價於 `Annotated[Type, Depends(Type)]`
+  + <mark>對於一時不可見的依賴，會向外解析依賴樹，直到找到為止</mark>
+    > 依賴樹的 root node 必須是 API handler，\
+    > 意即，它只能用於 API handler 內的 `Annotated`。\
+    > 想必是在 `@app` 做了一些處理，詳見 [Annotated 黑魔法](https://hackmd.io/@RogelioKG/pythons_flying_circus/%2F%40RogelioKG%2Ftyping#Annotated%EF%BC%9A%E8%A8%BB%E9%87%8B)。\
+    > 不過你也能用三方庫 [fastapi-injectable](https://github.com/JasperSui/fastapi-injectable) 的 `@injectable`，\
+    > 讓它脫離 `@app` 也能運作。
++ 範例
+  ```ps
+  curl "http://localhost:8000/items/?skip=10&limit=5"
+  ```
+  ```py
+  # ✅ 若你需要，這裡還可以再塞 Depends (sub-dependency)
+  async def common_params(skip: int = 0, limit: int = 100): 
+      return {"skip": skip, "limit": limit}
+
+  @app.get("/items/")
+  async def read_items(commons: Annotated[dict, Depends(common_params)]):
+      return commons
+  ```
++ 範例：<mark>隔山打牛</mark>
+  ```py
+  def get_double(n: int) -> int:
+      return n * 2
+
+  # 🚩 n 不用寫在參數簽名！
+  # 🚩 在 /test?n=2 時，會回傳 4 
+  @app.post("/test")
+  async def test(doubled_number: Annotated[int, Depends(get_double)]):
+      return doubled_number
+  ```
++ 範例：OAuth 2.0
+  ```py
+  from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+  # 自動從 request 的 authorization header 拿取 bearer token
+  OAuth2Token = Annotated[
+    str, 
+    Depends(OAuth2PasswordBearer(tokenUrl="api/auth/login"))
+  ]
+
+  # 自動從 request 抓取登入資訊 (username 與 password 欄位，此為 OAuth 2.0 規定)
+  LoginForm = Annotated[
+    OAuth2PasswordRequestForm, 
+    Depends()
+  ]
+  ```
++ 範例：Database
+  ```py
+  ...
+  ```
+
+
+
 ### `app.mount`
-```py
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
-```
-+ 把整個 `static` 目錄掛在網站根目錄 `/`。
-+ 請求 http://127.0.0.1:8000 → 對應到 `static/index.html` (因為設置 `html=True`)
-+ 請求 http://127.0.0.1:8000/index.html → 對應到 `static/index.html`
-+ 請求 http://127.0.0.1:8000/assets/foo.js → 對應到 `static/assets/foo.js`
++ 說明
+  ```py
+  app.mount(
+    "/assets", 
+    StaticFiles(directory="static/assets", html=True),
+    name="assets"
+  )
+  ```
+  + **`path`**："/assets"
+    > + 將「本地目錄」掛載到 /assets 路由底下
+    > + 任何請求 /assets/... 都會去讀取 static/assets/...
+  + **`app`**：StaticFiles(...)
+    > + 靜態資源伺服器
+    > + `directory`："static/assets" (掛載的本地目錄)
+    > + `html`：True (當使用者存取掛載點 /assets 本身時，若對應的本地目錄中存在 index.html，回傳 index.html)
+  + **`name`**：路由名稱
++ 範例
+  + 請求 http://127.0.0.1:8000/assets/foo.js → 回傳 `static/assets/foo.js`
+  + 請求 http://127.0.0.1:8000/assets → 回傳 `static/assets/index.html`
+
+
+## Security
+
++ 範例：<mark>使用 [JWT](https://kucw.io/blog/jwt/) 最簡實作 OAuth 2.0 授權流程</mark>
+  ```py
+  from datetime import UTC, datetime, timedelta
+  from typing import Annotated, Any, Literal
+
+  import uvicorn
+  from fastapi import Depends, FastAPI, HTTPException
+  from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+  from jose import ExpiredSignatureError, JWTError, jwt
+  from jose.constants import ALGORITHMS
+
+  app = FastAPI()
+
+  # 自動從 request 的 authorization header 拿取 bearer token
+  OAuth2Token = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="login"))]
+  # 自動從 request 抓取登入資訊 (username 與 password 欄位，此為 OAuth 2.0 規定)
+  LoginForm = Annotated[OAuth2PasswordRequestForm, Depends()]
+
+  SECRET = "my-secret"
+  ALGO = ALGORITHMS.HS256
+
+
+  def generate_token(
+      payload: dict[str, Any],
+      secret: str,
+      *,
+      usage: Literal["access", "refresh"],
+  ):
+      expire_time_dict = {"access": 30, "refresh": 60}  # 幾秒後過期
+      token_expire_time = datetime.now(UTC) + timedelta(seconds=expire_time_dict[usage])
+      token_payload = {
+          **payload,
+          "exp": int(token_expire_time.timestamp()),  # 指定過期時間
+          "usage": usage,  # 指定用途
+      }
+      token = jwt.encode(token_payload, secret, algorithm=ALGO)
+      return token
+
+
+  def decode_token(token: str, secret: str) -> dict[str, Any]:
+      try:
+          return jwt.decode(token, secret, algorithms=[ALGO])
+      except ExpiredSignatureError as err:
+          raise HTTPException(status_code=401, detail="Token expired") from err
+      except JWTError as err:
+          raise HTTPException(status_code=401, detail="Invalid token") from err
+
+
+  def verify_user(payload: dict[str, Any]) -> None:
+      _user_id = payload.get("id")
+      _email = payload.get("sub")
+      if _user_id != 5 or _email != "rogelio@example.com":
+          raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+  # * 登入路由，獲取 token 用
+  @app.post("/login")
+  def login(form_data: LoginForm):
+      if form_data.username != "RogelioKG" or form_data.password != "123456":
+          raise HTTPException(status_code=401, detail="Invalid credentials")
+
+      payload = {
+          "sub": "rogelio@example.com",
+          "id": 5,
+      }
+
+      access_token = generate_token(payload, SECRET, usage="access")
+      refresh_token = generate_token(payload, SECRET, usage="refresh")
+
+      return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+  # * 刷新路由，獲取新的 token 用
+  @app.post("/refresh")
+  def refresh(token: OAuth2Token):
+      payload = decode_token(token, SECRET)
+      verify_user(payload)
+
+      assert payload.get("usage") == "refresh"  # ! 只能使用 refresh_token 來 refresh
+
+      # 重建 payload，避免來路不明的 payload 注入
+      new_payload = {
+          "sub": payload["sub"],
+          "id": payload["id"],
+      }
+
+      access_token = generate_token(new_payload, SECRET, usage="access")
+      refresh_token = generate_token(new_payload, SECRET, usage="refresh")
+
+      return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+  # * 私人路由，獲取 private resources 用
+  @app.get("/profile")
+  def profile(token: OAuth2Token):
+      payload = decode_token(token, SECRET)
+      verify_user(payload)
+      assert payload.get("usage") == "access"  # ! 只能使用 access_token 來 access
+
+      return {"message": "Welcome back!"}
+
+
+  if __name__ == "__main__":
+      uvicorn.run(app, host="0.0.0.0", port=8000)
+
+  ```
+
+
++ `OAuth2PasswordBearer`
+  + 名稱意義：使用者要以密碼換取 token
+  + 呼叫時，就會從 request 的 authorization header 拿取 bearer token
+    ```py
+    # 實作
+    class OAuth2PasswordBearer(OAuth2):
+        ...
+        # 所以當你依賴注入時，最後回傳的其實是字串 (token)
+        async def __call__(self, request: Request) -> Optional[str]:
+            authorization = request.headers.get("Authorization")
+            scheme, param = get_authorization_scheme_param(authorization)
+            if not authorization or scheme.lower() != "bearer":
+                if self.auto_error:
+                    raise HTTPException(
+                        status_code=HTTP_401_UNAUTHORIZED,
+                        detail="Not authenticated",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+                else:
+                    return None
+            return param
+    ```
++ `OAuth2PasswordRequestForm`
+  + request 嚴格要求：
+    + 一定要用 POST
+    + body 一定要用 x-www-form-urlencoded 格式
+
++ PostMan 測試
+  ![](https://hackmd.io/_uploads/HJWMDcv1xg.png)
+
+## Middleware
++ 說明
+  + 中介層，攔截 Request、Response
++ 範例
+  ```py
+  @app.middleware("http")
+  async def add_process_time_header(
+      request: Request,
+      call_next: Callable[[Request], Awaitable[Response]],
+  ):
+      start_time = time.perf_counter()
+      print(f"[Middleware] 收到請求：{request.method} {request.url}")
+
+      # 👉 呼叫下一層 (下一 middleware 或 API handler)
+      response = await call_next(request)
+
+      # 計算時間
+      process_time = time.perf_counter() - start_time
+      response.headers["X-Process-Time"] = str(process_time)
+
+      print(f"[Middleware] 回傳 response，耗時 {process_time:.6f} 秒")
+      return response
+
+
+  @app.get("/")
+  async def read_root():
+      return {"message": "Hello from FastAPI!"}
+
+  ```
+
++ 範例：<mark>CORS</mark>
+  > <mark>是否允許 CORS 是由 server 端決定的</mark>，自然是要在後端進行設定
+  > + Cross Origin Request（跨源請求）：\
+  > 一個來自 http://localhost:8000 的 JS 腳本，向 https://api.sampleapis.com/coffee/hot 發出請求（調用 API）
+  > + Cross Origin Resource Sharing（跨源資源共用）：\
+  > server 端安全政策，用來決定是否接受跨源請求
+  ```py
+  origins = [
+      "http://localhost.tiangolo.com",
+      "https://localhost.tiangolo.com",
+      "http://localhost",
+      "http://localhost:8080",
+  ]
+
+  app.add_middleware(
+      CORSMiddleware,
+      allow_origins=origins,
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
+  )
+  ```
+
+## BackgroundTasks
++ 說明
+  + 一些比較繁重的任務，你不希望等到它完整執行完，才給前端響應 (速度太慢)
++ 範例
+  ```py
+  def write_log(email: str):
+      with open("log.txt", "a") as f:
+          f.write(f"Email sent to {email}\n")
+
+  @app.post("/notify/{email}")
+  async def notify(email: str, background_tasks: BackgroundTasks):
+      background_tasks.add_task(write_log, email)
+      return {"message": "Response returned, task running in background!"}
+  ```
 
 ## Uvicorn
-+ `--reload`：開啟 hot reload
++ 使用
   ```bash
   uvicorn <app_script>:<app_object_name> --host <host> --port <port>
   ```
++ 常見選項
+  | 選項 | 說明 |
+  |------|------|
+  | `--reload` | 偵測檔案變更，並自動重新啟動伺服器（Hot reload） |
+  | `--host 0.0.0.0` | 指定 IP |
+  | `--port 8000` | 指定 port |
+  | `--workers 4` | 啟動多個 worker（<mark>不能與 reload 同時使用</mark>） |
+  | `--env-file .env` | 指定環境變數檔案 |
+  | `--log-level info` | 設定 log 等級 |
+  | `--proxy-headers` | 信任反向代理傳遞的 headers |
+  | `--ssl-keyfile` / `--ssl-certfile` | 啟用 HTTPS |
+
+
 
 ## Async
 
@@ -274,130 +783,6 @@ app.mount("/", StaticFiles(directory="static", html=True), name="static")
   POSTGRES_DATABASE_URI="postgresql+aiomysql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
   ```
 
-## Unit Testing
-+ `pytest`
-+ `pytest-mock`
-+ `pytest-asyncio`
-
-## OAuth 2.0
-
-+ <mark>使用 [JWT](https://kucw.io/blog/jwt/) 最簡實作 OAuth 2.0 授權流程</mark>
-  ```py
-  from datetime import UTC, datetime, timedelta
-  from typing import Annotated, Any, Literal
-
-  from fastapi import Depends, FastAPI, HTTPException
-  from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-  from jose import jwt
-
-  app = FastAPI()
-
-  # 自動從 request 的 authorization header 拿取 bearer token
-  OAuth2Token = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="login"))]
-  # 自動從 request 抓取登入資訊 (username 與 password 欄位，此為 OAuth 2.0 規定)
-  LoginForm = Annotated[OAuth2PasswordRequestForm, Depends()]
-
-
-  def generate_token(
-      payload: dict[str, Any],
-      secret: str,
-      *,
-      usage: Literal["access", "refresh"],
-  ):
-      expire_time_dict = {"access": 30, "refresh": 60}  # 幾秒後過期
-      token_expire_time = datetime.now(UTC) + timedelta(seconds=expire_time_dict[usage])
-      token_payload = {
-          **payload,
-          "exp": token_expire_time,  # 指定過期時間
-          "usage": usage,  # 指定用途
-      }
-      token = jwt.encode(token_payload, secret)
-      return token
-
-
-  def verify_user(payload: dict[str, Any]) -> None:
-      _user_id = payload.get("id")
-      _email = payload.get("sub")
-      if _user_id != 5 or _email != "rogelio@example.com":
-          raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-  # * 登入路由，獲取 token 用
-  @app.post("/login")
-  def login(form_data: LoginForm):
-      if form_data.username != "RogelioKG" or form_data.password != "123456":
-          raise HTTPException(status_code=401, detail="Invalid credentials")
-
-      secret = "my-secret"
-      payload = {
-          "sub": "rogelio@example.com",
-          "id": 5,
-      }
-
-      access_token = generate_token(payload, secret, usage="access")
-      refresh_token = generate_token(payload, secret, usage="refresh")
-
-      return {"access_token": access_token, "refresh_token": refresh_token}
-
-
-  # * 刷新路由，獲取新的 token 用
-  @app.post("/refresh")
-  def refresh(token: OAuth2Token):
-      secret = "my-secret"
-      payload = jwt.decode(token, secret)
-      verify_user(payload)
-      assert payload.get("usage") == "refresh"  # ! 只能使用 refresh_token 來 refresh
-
-      access_token = generate_token(payload, secret, usage="access")
-      refresh_token = generate_token(payload, secret, usage="refresh")
-
-      return {"access_token": access_token, "refresh_token": refresh_token}
-
-
-  # * 私人路由，獲取 private resources 用
-  @app.get("/profile")
-  def profile(token: OAuth2Token):
-      secret = "my-secret"
-      payload = jwt.decode(token, secret)
-      verify_user(payload)
-      assert payload.get("usage") == "access"  # ! 只能使用 access_token 來 access
-
-      return {"message": "Welcome back!"}
-  ```
-
-
-+ `OAuth2PasswordBearer`
-  + 名稱意義：使用者要以密碼換取 token
-  + 呼叫時，就會從 request 的 authorization header 拿取 bearer token
-    ```py
-    # 實作
-    class OAuth2PasswordBearer(OAuth2):
-        ...
-        # 所以當你依賴注入時，最後回傳的其實是字串 (token)
-        async def __call__(self, request: Request) -> Optional[str]:
-            authorization = request.headers.get("Authorization")
-            scheme, param = get_authorization_scheme_param(authorization)
-            if not authorization or scheme.lower() != "bearer":
-                if self.auto_error:
-                    raise HTTPException(
-                        status_code=HTTP_401_UNAUTHORIZED,
-                        detail="Not authenticated",
-                        headers={"WWW-Authenticate": "Bearer"},
-                    )
-                else:
-                    return None
-            return param
-    ```
-+ `OAuth2PasswordRequestForm`
-  + request 嚴格要求：
-    + 一定要用 POST
-    + body 一定要用 x-www-form-urlencoded 格式
-
-+ PostMan 測試
-  ![](https://hackmd.io/_uploads/HJWMDcv1xg.png)
-
-
-
 ## Docker
 
 ### database
@@ -414,7 +799,6 @@ app.mount("/", StaticFiles(directory="static", html=True), name="static")
 ### caution
 + 後端的 `HOST` 要設定成 `0.0.0.0`
   ...
-
 + 資料庫 URI 的 `HOST` 要設定成 `docker-compose.yml` 內指定的 services 名稱
 
   如下範例，為 `postgresql-db`
