@@ -23,7 +23,7 @@
 
 ## Models
 
-### `BaseModel` [Model](https://docs.pydantic.dev/latest/concepts/models/#model-methods-and-properties)
+### `BaseModel`：[Model](https://docs.pydantic.dev/latest/concepts/models/#model-methods-and-properties)
 + 允許嵌套
 + 方法
     + 驗證 (<mark>若允許 None，Model 屬性型別要多標註 `| None` ，並給預設值 `None`</mark> )
@@ -123,7 +123,7 @@
         test_user()
     ```
 
-### `ConfigDict` 設定 Model 行為
+### `ConfigDict`：設定 Model 行為
 + 範例
     ```py
     class User(BaseModel):
@@ -141,7 +141,7 @@
 
 ## Types
 
-### 型別
+### `~`：型別
 + [Standard Library Types](https://docs.pydantic.dev/latest/api/standard_library_types/)
 + [Pydantic Types](https://docs.pydantic.dev/latest/api/types/)
     + `Strict~` 嚴格型別
@@ -152,7 +152,7 @@
     + `SecretStr` 密碼
     + ...
 
-### `TypeAdaptor` 轉接頭
+### `TypeAdaptor` ：轉接頭
 + 範例
 
     無須顯式繼承 `BaseModel` 也能進行驗證
@@ -181,7 +181,7 @@
     data = {"name": "Alice", "age": "30"}
     print(adapter.validate_python(data))  # User(name='Alice', age=30)
     ```
-### `FailFast` 出錯了就趕緊下台
+### `FailFast`：出錯趕緊下台
 
 + 範例
 
@@ -440,7 +440,7 @@
     + `mode=before`
     + `mode=after`
     + `mode=wrap`
-+ 範例 (ArjanCodes 提供)
++ 範例 (ArjanCodes)
     ```py
     import enum
     import hashlib
