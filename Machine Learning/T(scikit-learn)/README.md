@@ -2,10 +2,17 @@
 
 [![RogelioKG/scikit-learn](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/scikit-learn)
 
+## References
++ 🔗 [**Documentation - scikit-learn**](https://scikit-learn.org/)
+
 ## Cheatsheet
 
 ![ML map](https://scikit-learn.org/1.4/_static/ml_map.png)
 
+## Note
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+| scikit-learn 中使用的 <mark>neural network</mark> 以 <mark>CPU</mark> 作為計算平台 |
 
 ## Persistence
 > 使用 `joblib`
@@ -24,7 +31,7 @@ joblib.dump(model, 'iris.joblib')
 model = joblib.load('iris.joblib')
 ```
 
-### Classification
+## Classification
 ```py
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -46,8 +53,27 @@ model.fit(X_train, y_train)
 predictions = model.predict(X_test)
 print(f"Accuracy: {accuracy_score(y_test, predictions):.2f}")
 ```
+```py
+from sklearn.neural_network import MLPClassifier
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
 
-### Regression
+# 1. 產生資料
+X, y = make_classification(n_samples=100, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
+
+# 2. 建立模型
+clf = MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=300, random_state=1)
+
+# 3. 訓練模型
+clf.fit(X_train, y_train)
+
+# 4. 進行預測
+print(f"Accuracy: {clf.score(X_test, y_test):.2f}")
+```
+
+
+## Regression
 ```py
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
@@ -72,7 +98,7 @@ print(f"Coefficient: {model.coef_[0]:.2f}")
 ```
 
 
-### Clustering
+## Clustering
 
 ```py
 from sklearn.datasets import make_blobs
@@ -93,7 +119,7 @@ print(f"Labels: {predict_labels}")
 print(f"Cluster Centers: {model.cluster_centers_}")
 ```
 
-### Dimensionality reduction
+## Dim Reduction
 
 ```py
 from sklearn.datasets import load_iris
