@@ -5,13 +5,48 @@
 ## Note
 
 ### axis
-+ 軸值
-  + `0`：第 0 軸 (行) [左手 - 拇指]
-  + `1`：第 1 軸 (列) [左手 - 其他手指]
-  + `2`：第 2 軸 (層) [左手 - 手掌]
-  + `-1`：最終軸
-+ 轉置原則
-  + <mark>倒轉軸值</mark> (原本的第 0、1、2 軸，變成第 2、1、0 軸)
++ <mark>array[層][列][行]</mark>
++ <mark>array.shape == (層, 列, 行)</mark>
+  + 軸
+    > 第 -1 軸代表行，那代表沿著第 -1 軸前進時，只有行會變動。\
+    > 比如第 1 行、第 2 行 ... 記住這點，小心別搞錯方向。\
+    > 以此類推，我們可得出：第 i 軸上有 shape[i] 個元素。
+  + i = 0：第 0 軸 (層)
+  + i = 1：第 1 軸 (列)
+  + i = 2：第 2 軸 (行)
+  + i = -1：最終軸 (行)
++ <mark>轉置：reverse 所有軸</mark>
+  > 原本的第 0、1、2 軸，變成第 2、1、0 軸
+
+### NDA
++ 一維 NDA (轉置無效、相乘時自動調正行列、相乘結果必然是一維 NDA)
+  ```py
+  np.array([2.0, 4.0]) # shape: (2,)
+  ```
++ 二維 NDA (轉置有效)
+  ```py
+  np.array([2.0, 4.0]) # shape: (1, 2)
+  ```
++ 一維 NDA <-> 二維 NDA
+  ```py
+    a = np.array([2.0, 4.0])
+    print(a)
+    # [2. 4.]
+    
+    b = a[:, None]
+    print(b)
+    # [[2.]
+    #  [4.]]
+    
+    c = a[None, :]
+    print(c)
+    # [[2. 4.]]
+    
+    d = b[:, 0]
+    print(d)
+    # [2. 4.]
+  ```
++ [<mark>broadcasting</mark>](https://steam.oxxostudio.tw/category/python/numpy/numpy-broadcast.html)：將小 NDA 擴展成大 NDA，以便兼容 NDA 的四則運算 (`+`、`-`、`*`、`/`)
 
 ## Class
 
@@ -59,6 +94,7 @@
   | `ravel()` | 壓平（淺拷貝） |
   | `reshape(shape)` | 重塑 |
   | `unique(axis=)` | 挑出獨特元素並排序 |
+  | `clip(a_min=,a_max=)` | 元素超過 a_max 則為 a_max，少於 a_min 則為 a_min |
 
 + 參數
   + `unique()`
@@ -86,13 +122,13 @@
 + 自訂型別
   ```py
   Student = np.dtype([
-      ('name', np.unicode_, 16),
+      ('name', np.str_, 16),
       ('grades', np.float64, (2,))
   ])
 
   # struct Student
   # {
-  #     unicode_ name[16];
+  #     string name[16];
   #     float64 grades[2];
   # };
 
@@ -100,6 +136,10 @@
       ('Sarah', (8.0, 7.0)), 
       ('John', (6.0, 7.0))
   ], dtype=Student)
+
+  print(arr[1]["name"])      # John
+  print(arr[1]["grades"])    # [6. 7.]
+  print(arr[:]["grades"])    # [[8. 7.] [6. 7.]]
   ```
 ### 日期 `datetime64`
 + 使用
@@ -152,6 +192,8 @@
   | `meshgrid(x座標點, y座標點)` | 網格化：返回 x 矩陣、y 矩陣 |
   | `mgrid[x座標點slice, y座標點slice]` | 網格化：返回 x 矩陣、y 矩陣 (一般)|
   | `ogrid[x座標點slice, y座標點slice]` | 網格化：返回 x 矩陣、y 矩陣 (稀疏)|
+  | `argmax(NDA, axis=)` | 最大值的索引 |
+  | `argmin(NDA, axis=)` | 最小值的索引 |
 
 + 參數
   + `linspace()`
@@ -168,6 +210,26 @@
     | `order='K'` | 記憶體儲存方式 |
     | `subok=False` | 是否允許子類別繼承 |
     | `ndmin=0` | 最小維度 |
+  + `sum()`
+    | 參數 | 說明 |
+    |------|------|
+    | `object` | 陣列物件 |
+    | `axis=1` | 對第幾軸進行操作 |
+    | `keepdims=True/False` | 保留原有維度 |
+    > + 原 NDA
+    > 	```
+    > 	[[1, 2, 3],
+    > 	[4, 5, 6]]
+    > 	```
+    > + 有 keepdims
+    > 	```
+    > 	[[6],
+    > 	[15]]
+    > 	```
+    > + 未 keepdims
+    > 	```
+    > 	[6, 15]
+    > 	```
 
 ### Math
 + 函數
@@ -267,3 +329,18 @@
            #   v  v  v
   print(z) # [ 2. 0. 2.]
   ```
+
+### Random
+```py
+# 舊 API (np.random)
+np.random.seed(42)
+np.random.randn(3, 2)   # 正態分佈
+np.random.rand(3, 2)    # 均勻分佈
+
+# 新 API (Generator)
+rng = np.random.default_rng(42)
+
+rng.standard_normal((3, 2))  # 取代 randn()
+rng.random((3, 2))           # 取代 rand()
+rng.integers(0, 10, (3, 2))  # 取代 randint()
+```
