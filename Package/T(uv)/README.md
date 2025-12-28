@@ -44,13 +44,10 @@
 
 ## Note
 
-|☢️ <span class="warning">WARNING</span>|
-|:---|
-|uv 仍在開發中！<br>此筆記紀錄的是 <mark>`0.9.5`</mark> (2025/10/21) 的功能！|
-
 |📘 <span class="note">NOTE</span> : uv|
 |:---|
-| uv 的安裝：使用 hardlink (詳見：[cache](#cache：快取))|
+|uv 仍在開發中！<br><span style="color: grey;">註：此筆記紀錄的是 `0.9.5` (2025/10/21) 的功能！</span>|
+| uv 安裝第三方套件的方式：使用 hardlink (詳見：[cache](#cache：快取))|
 |uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
 |uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
 
@@ -313,7 +310,16 @@
   ```
   |📗 <span class="tip">TIP</span>|
   |:---|
-  |開發套件時，拿來多版本測試超好用！|
+  |超好用：開發套件時，進行多版本測試|
+
++ ### `--env-file`
+  > 暫時載入某個環境變數檔執行
+  ```
+  uv run --env-file .env main.py
+  ```
+  |📗 <span class="tip">TIP</span>|
+  |:---|
+  |超好用：因 monorepo 架構而在根目錄統一管理 `.env`，使用它可跨目錄將 `.env` 引入|
 
 ### `tree`：依賴樹
 > 展示套件們的依賴關係
@@ -373,7 +379,8 @@
 + #### `--locked`
   > 斷言 `uv.lock` 在導出過程中，不會被更改。\
   > (即斷言 <mark>`pyproject.toml` 和 `uv.lock` 一致</mark>)
-
++ #### `--only-group`
+  > 僅導出特定 group 內的依賴套件
 
 ### `cache`：快取
 
@@ -512,7 +519,7 @@
 > 給定 url。此選項可重複多次，指定多個額外 index。
 
 ### `--default-index`：預設套件源
-> 給定 url。此為是優先度最高的 index。
+> 給定 url。指定優先度最高的 index。
 
 ### `--index-strategy`：多套件源選定策略
 
@@ -532,8 +539,7 @@
 
 ### `project.optional-dependencies`：optional 依賴套件組 (使用者)
 > PEP 621 規範。\
-> 使用者可決定是否安裝的 optional 依賴：\
-> `uv add llm-crawler[proxy]`
+> 使用者可決定是否安裝的 optional 依賴：`uv add llm-crawler[proxy]`
 
 |📗 <span class="tip">TIP</span>|
 |:---|
@@ -556,8 +562,7 @@ proxy = [
 
 ### `tool.uv.dependency-groups`：optional 依賴套件組 (開發者)
 > uv 擴充。\
-> 開發者可決定是否安裝的 optional 依賴：\
-> `uv add --group lint`
+> 開發者可決定是否安裝的 optional 依賴：`uv add --group lint`
 ```toml
 [dependency-groups]
 dev = [
@@ -569,14 +574,14 @@ lint = [
 ```
 
 ### `tool.uv.default-groups`：預設安裝 optional 依賴套件組 (開發者)
-> ...
+> uv 擴充。
 ```toml
 [tool.uv]
 default-groups = ["lint"]
 ```
 
 ### `tool.uv.index`：額外套件源
-> ...
+> uv 擴充。
 ```toml
 [[tool.uv.index]]
 name = "pytorch-cu124"
@@ -593,7 +598,9 @@ url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 ```
 
-### `tool.uv.sources`：uv - 此套件需從【指定套件源】下載
+### `tool.uv.sources`：此套件需從【指定套件源】下載
+> uv 擴充。
+> 
 > `explicit = true`
 > + 代表僅此套件的 wheel 檔從【指定套件源】抓取
 > + 其餘依賴套件的 wheel 檔從【預設套件源】抓取
