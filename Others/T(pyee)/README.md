@@ -1,7 +1,5 @@
 # pyee
 
-[![RogelioKG/pyee](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/pyee)
-
 ## References
 + 🔗 [**六小編 Editor Leon - 從 pyee 認識觀察者模式**](https://editor.leonh.space/2024/ee/)
 
