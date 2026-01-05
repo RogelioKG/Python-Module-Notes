@@ -50,7 +50,7 @@
 ## Note
 |📘 <span class="note">NOTE</span> : uv|
 |:---|
-|uv 仍在開發中！<br><span style="color: grey;">註：此筆記紀錄的是 `0.9.5` (2025/10/21) 的功能！</span>|
+|uv 仍在開發中！<br><span style="color: grey;">註：此筆記紀錄的是 `0.9.21` (2025/12/30) 的功能！</span>|
 | uv 安裝第三方套件的方式：使用 hardlink (詳見：[cache](#cache：快取))|
 |uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
 |uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
