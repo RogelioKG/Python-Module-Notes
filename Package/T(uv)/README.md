@@ -2,10 +2,14 @@
 
 [![RogelioKG/uv](https://img.shields.io/badge/Sync%20with%20HackMD-grey?logo=markdown)](https://hackmd.io/@RogelioKG/uv)
 
+
+
 ## References
 + 📑 [**Documentation - uv**](https://docs.astral.sh/uv/)
 + 🔗 [**使用 uv 管理 Python 環境**](https://dev.to/codemee/shi-yong-uv-guan-li-python-huan-jing-53hg)
 + 🎬 [**ArjanCodes - UV for Python… (Almost) All Batteries Included**](https://youtu.be/qh98qOND6MI)
+
+
 
 ## Installation
 + Windows
@@ -13,22 +17,22 @@
   scoop install uv 
   ```
 
+
+
 ## Cheatsheet
 👇 最常用到的指令
 
 ![uv.drawio](https://hackmd.io/_uploads/Byn2TYA0xx.svg)
 
 
-## Advantages
 
+## Advantages
 🐍 Python 終於也有了一個上得了檯面的 package manger
 
 ### 🧩 良好的依賴解析
-
 > 刪除套件時，是真的會找出沒用到的依賴套件並刪除 (確保無 redundancy)
 
 ### 🧰 不只是依賴管理
-  
 > 集成非常多 out-of-the-box 的工具
 > + Dependency Management
 > + Virtual Environment
@@ -36,14 +40,14 @@
 > + Publish Packages
 
 ### ⚡ 比 pip 快<mark>數十倍</mark>的速度
-
 > 你以為 package manager 安裝套件的耗時，就是讓你去泡咖啡偷懶的時間嗎？\
 > 噢不我的朋友，當你拿著你的杯子，準備離開電腦桌的時候，\
 > uv 就已經以趕火車的速度，完成 dependency resolution 並 install 完畢。\
 > 想見識這個驚掉下巴的速度，詳見 [benchmark](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md)。
 
-## Note
 
+
+## Note
 |📘 <span class="note">NOTE</span> : uv|
 |:---|
 |uv 仍在開發中！<br><span style="color: grey;">註：此筆記紀錄的是 `0.9.5` (2025/10/21) 的功能！</span>|
@@ -51,8 +55,9 @@
 |uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
 |uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
 
-## Resolving
 
+
+## Resolving
 | 類型 | 套件共用策略 | 套件多版本共存 | 範例 |
 | --- | --- | --- | --- |
 | **Tree** | 不共用 | ✅ 允許 | `npm v2` |
@@ -63,16 +68,14 @@
 > 通常採用 SAT solver 來嘗試找解。\
 > uv 使用的是一種特別的 solver：[PubGrub](https://github.com/pubgrub-rs/pubgrub)。
 
-## Commands
 
+
+## Commands
 詳見 [UV CLI](https://docs.astral.sh/uv/reference/cli/#uv)。
 
-
 ### `init`：創建專案
-
 + #### `--python`
   > 指定 Python 版本
-
 + #### `--script`
   > 用於構建一個簡單<mark>腳本</mark>
   + 腳本的所有依賴直接寫在 dependencies
@@ -82,7 +85,7 @@
     # dependencies = ["httpx"]
     # ///
 
-
+    
     import httpx
 
 
@@ -105,7 +108,6 @@
     ```
     uv run --with httpx==0.27.0 main.py
     ```
-
 + #### `--app`
   > 用於構建一個<mark>應用程式</mark>，通常不作為套件發布
   + 目錄架構
@@ -117,7 +119,6 @@
     ├── pyproject.toml
     └── README.md
     ```
-
 + #### `--lib`
   > 用於構建一個<mark>函式庫</mark>，可作為套件發布
   + 目錄架構
@@ -146,7 +147,6 @@
     + 原理：把 `src/` 目錄加入 `sys.path`
   + user 實際安裝
     + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
-
 + #### `--package`
   > 用於構建一些 <mark>CLI 工具</mark>，可作為套件發布
   + 目錄架構
@@ -177,26 +177,19 @@
   + user 實際安裝
     + 只有 `src/` 目錄中的內容，會被放入 `.venv/Lib/site-packages/` 目錄
     + <mark>會在 `.venv/Scripts/` 生成執行檔，供 user 調用</mark> (註：需先進入 venv)
-
 + #### `--build-backend`
   > 指定打包用 backend\
   > (若專案是可發布套件才會用的到)
-  
   + 可自己指定第三方 build backend
     > 比如：`hatch` (hatchling)、`setuptools` (setuptools)。\
     > 預設是 `uv-build`。
 
-
 ### `sync`：同步套件
-
 > <mark>安裝全部套件的加強版</mark>。\
 > 假如發生一些意外，導致你的 venv 缺了某些套件，\
 > 或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
 
-
 ### `add` ：安裝套件
-
-
 |📗 <span class="tip">TIP</span>|
 |:---|
 |有 wheel 包的話，也可以直接安裝：`uv add ???.whl`|
@@ -251,7 +244,6 @@
       │   └── urllib3 v2.5.0 (*)
       └── urllib3 v2.5.0
       ```
-
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
   | 既然一種扁平狀結構，能推斷出多種樹狀結構，<br>我們就無法用一種扁平狀結構，去唯一決定為一種樹狀結構。<br>意即：無法猜測同事原先使用 `pip install` 哪些套件。<br><mark>這絕不是 uv 的缺陷，恰恰相反，這是 pip 的缺陷！</mark> |
@@ -270,25 +262,19 @@
   |📗 <span class="tip">TIP</span>|
   |:---|
   |那要怎麼解決呢？<br>只能<mark>請你的同事回想，他當初手動安裝過的是哪些套件</mark>囉！|
-
 + #### `--no-sync`
   > 不自動同步
   + 只解析依賴，並更新 `pyproject.toml` 和 `uv.lock`
   + 不會自動安裝、移除套件
-
 
 ### `remove`：移除套件
-
 > 移除套件時，會自動解析並移除未使用的依賴套件。
-
 + #### `--no-sync`
   > 不自動同步
   + 只解析依賴，並更新 `pyproject.toml` 和 `uv.lock`
   + 不會自動安裝、移除套件
 
-
 ### `run`：執行腳本
-  
 + #### ` `
   > 一般執行
   ```
@@ -302,7 +288,6 @@
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
   |會下載到快取，若太久沒清會很胖，要定期清|
-
 + #### `--python`
   > 暫時使用某版本 Python 執行
   ```
@@ -311,7 +296,6 @@
   |📗 <span class="tip">TIP</span>|
   |:---|
   |超好用：開發套件時，進行多版本測試|
-
 + ### `--env-file`
   > 暫時載入某個環境變數檔執行
   ```
@@ -324,16 +308,12 @@
 ### `tree`：依賴樹
 > 展示套件們的依賴關係
 
-
 ### `python`：多版本
-
-
 + #### `list`
   > 列出可用 Python 版本
   ```
   uv python list
   ```
-
 + #### `install` / `uninstall`
   > 安裝 / 移除
   ```
@@ -343,10 +323,8 @@
   |:---|
   |Python 直譯器會被放在 `~/.local/bin` (全域可見)|
   |<mark>在全域可使用 `python3.xx` 把 REPL 互動式環境叫出來</mark>|
-
 + #### `pin`
   > 切換 Python 版本 (更改 `.python-version`)
-
   + ` `
     > 專案內的 Python 版本
     ```
@@ -356,8 +334,7 @@
     > 之後 init 專案的 Python 版本
     ```
     uv python pin 3.11 --global
-      ```
-
+    ```
 
 ### `export`：將 lockfile 導出為其他格式
 
@@ -383,11 +360,9 @@
   > 僅導出特定 group 內的依賴套件
 
 ### `cache`：快取
-
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
   |uv 為避免重複下載，採取激進快取策略，若太久沒清會很胖，要定期清|
-
 + #### `dir`
   > 快取目錄 (通常是 `%LOCALAPPDATA%/uv/cache`)
   + 補充
@@ -404,15 +379,13 @@
     ```
 + #### `clean`
   > 清除 - 清除所有快取
-
 + #### `prune`
   > 修剪 - 清除舊版快取
-  
+
   |🔮 <span class="important">IMPORTANT</span>|
   |:---|
   |「修剪」中[舊版快取](https://github.com/astral-sh/uv/issues/10153#issuecomment-2564360859)的意思是，<mark>uv 因實作調整，而遺留下來的舊版目錄結構</mark>。 |
   |比如在快取目錄中，有類似 `wheels-v5` 這樣的快取，它的上一版可能就是 `wheel-v4`，當 uv 版本更新時，這些舊版快取就會變成孤兒。 |
-
 
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
@@ -420,37 +393,9 @@
   | pnpm 可以知道 hardlink 的 link count，然後去自動清理；uv 並沒有選擇這麼做。|
   | 根據 [uv 的 contributer 所述](https://github.com/astral-sh/uv/issues/16008#issuecomment-3333296869)，他們針對快取修剪這塊還在討論中，她認為 pnpm 的未用及刪不是好主意，她更傾向 LRU 的作法 (下載熱點保留、被冷落的修剪掉) |
 
-### `build` ：構建套件
-
-
-### `publish`：發布套件
-
-1. 發布到不同套件源 (比如 testpypi)
-    > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index：指定套件源)
-2. 會問你 username 和 password (但現在不是改用 API token 登入？)
-    > 因此 username 要輸入 `__token__`，password 再輸入 API token 即可
-
-
-### `pip`：相容 pip 介面
-  ...
-
-
-### `venv`：創建虛擬環境
-
-> 預設目錄名 `.venv`
-
-+ #### `--python`
-  > 指定虛擬環境 Python 版本
-  ```
-  uv venv --python 3.11.4
-  ```
-
-
 ### `tool`：工具
-
 > 工具是一種 CLI 執行檔。\
 > 會被安裝在獨立環境 (非專案內)，以避免受不相關的依賴套件影響。
-
 + #### `run`
   > 暫時下載工具 (可簡寫 `uvx`)
   ```
@@ -459,7 +404,6 @@
   |📘 <span class="note">NOTE</span>|
   |:---|
   |CLI 執行檔會被放在 `~/.local/bin` (全域可見)|
-
 + #### `install` / `uninstall`
   > 安裝 / 移除
   + 一般安裝
@@ -471,7 +415,6 @@
     ```
     uv tool install ruff --python 3.10
     ```
-    
 + #### `dir` 
   > 工具被安裝在哪個目錄\
   > (通常是 `%AppData%/Roaming/uv/tools`)
@@ -479,16 +422,67 @@
   uv tool dir
   ```
 
+### `build` ：構建套件
+> ...
+
+### `publish`：發布套件
+1. 發布到不同套件源 (比如 testpypi)
+    > 下指令時要指定套件源 `--index testpypi` (要先在 [`pyproject.toml` 設定](#--index：指定套件源)
+2. 會問你 username 和 password (但現在不是改用 API token 登入？)
+    > 因此 username 要輸入 `__token__`，password 再輸入 API token 即可
+
+### `version` 版本控制
+> 自己 project 的版本控制
+
+| 情境 | 指令 | 原版 | 新版 |
+| :--- | :--- | :--- | :--- |
+| 發布新版 |`uv version 0.1.0` | ... | 0.1.0 |
+| 小修小補<br>(向下相容的問題修正) | `uv version --bump patch` | 0.1.0 | 0.1.1 |
+| 小修小補<br>(有大 BUG) | `uv version --bump patch --bump dev` | 0.1.1 | 0.1.2.dev1 |
+| 小修小補<br>(有大 BUG) | `uv version --bump dev` | 0.1.2.dev1 | 0.1.2.dev2 |
+| 小修小補<br>(完工了) | `uv version --bump stable` | 0.1.2.dev2 | 0.1.2 |
+| 文檔修正<br>(說明文件沒寫好) | `uv version --bump post` | 0.1.2 | 0.1.2.post1 |
+| 新功能開發 | `uv version --bump minor --bump dev` | 0.1.2.post1 | 0.2.0.dev1 |
+| 開發過程 | `uv version --bump dev` | 0.2.0.dev1 | 0.2.0.dev2 |
+| 內部測試 - 版本 1 | `uv version --bump alpha` | 0.2.0.dev2 | 0.2.0a1 |
+| 內部測試 - 版本 2 | `uv version --bump alpha` | 0.2.0a1 | 0.2.0a2 |
+| 公開測試 - 版本 1 | `uv version --bump beta` | 0.2.0a2 | 0.2.0b1 |
+| 發布候選版 | `uv version --bump rc` | 0.2.0b1 | 0.2.0rc1 |
+| 正式發布 | `uv version --bump stable` | 0.2.0rc1 | 0.2.0 |
+| 重大架構重寫 | `uv version --bump major --bump dev` | 0.2.0 | 1.0.0.dev1 |
+| 史詩冒險持續中 | `...` | 1.0.0.dev1 | ... |
+
++ #### `--bump`
+  >  升版
+  + `major`：1.2.3 => 2.0.0
+  + `minor`：1.2.3 => 1.3.0
+  + `patch`：1.2.3 => 1.2.4
+  + `stable`：1.2.3b4.post5.dev6 => 1.2.3
+  + `alpha`：1.2.3a4 => 1.2.3a5
+  + `beta`：1.2.3b4 => 1.2.3b5
+  + `rc`：1.2.3rc4 => 1.2.3rc5
+  + `post`：1.2.3.post5 => 1.2.3.post6
+  + `dev`：1.2.3a4.dev6 => 1.2.3.dev7
+
+### `pip`：相容 pip 介面
+> ...
+
+### `venv`：創建虛擬環境
+> 預設目錄名 `.venv`
++ #### `--python`
+  > 指定虛擬環境 Python 版本
+  ```
+  uv venv --python 3.11.4
+  ```
 
 ### `lock`：生成 lockfile
-  ...
+> ...
 
 
 ### `auth`：套件上傳、下載需授權
 + 請參考：[PyPI Server](https://hackmd.io/@RogelioKG/pypi-server)
 
 ### `generate-shell-completion`：指令自動補全
-
 + 將 uv 的自動補全腳本，注入到初始化腳本內
   ```
   uv generate-shell-completion powershell >> $PROFILE
@@ -499,11 +493,7 @@
 
 
 
-
-
 ## Options
-
-
 
 ### `--group` / `--no-group`：optional 依賴套件組 (開發者)
 > 詳見 [dependency-groups](#dependency-groups：optional-依賴套件組-開發者)
@@ -515,6 +505,7 @@
     ```
     uv sync --group dev
     ```
+
 ### `--index`：額外套件源
 > 給定 url。此選項可重複多次，指定多個額外 index。
 
@@ -522,7 +513,6 @@
 > 給定 url。指定優先度最高的 index。
 
 ### `--index-strategy`：多套件源選定策略
-
 | 策略 | `first-index` | `unsafe-first-match` | `unsafe-best-match` |
 | --- | --- | --- | --- |
 | **行為** | 依 index 優先序解析，選擇優先序高的解析成功 index (預設) | 對每個依賴套件，依 index 優先序尋找版本，前一個 index 都沒合適版本，才換下一個 index | 對每個依賴套件，無視優先序從所有 index 找，若有多個則取優先序高的 index |
@@ -616,15 +606,15 @@ url = "https://download.pytorch.org/whl/cu124"
 explicit = true
 ```
 
+
+
 ## Project Structures
 
 ### namespace package
-
 + 有一種很特別的套件
   + install 時：`uv add google-auth google-cloud-storage`
   + import 時：`from google.auth import ...` `from google.cloud import ...` 
   + 嗯？我剛剛裝的是 `google-auth` 和 `google-cloud-storage` 對吧？怎麼都變 `google` 了？
-
 + namespace package 的魅力
   + 使用者所見目錄
     ```py
@@ -666,7 +656,6 @@ explicit = true
   + 插件本身也能依賴其他插件，這樣就能包成一個功能更強大的插件
   + 對於 developer 而言，每個插件可分配一個團隊開發
   + 對於 user 而言，所有插件仍歸屬同一個 namespace (統一品牌體驗)
-
 + 配置
   + `pyproject.toml` 
     ```toml
@@ -760,6 +749,8 @@ explicit = true
   build-backend = "uv_build"
   ```
 
+
+
 ## Packaging
 
 ### multi-version
@@ -792,25 +783,24 @@ explicit = true
   Write-Host "🎉 All versions tested successfully!" -ForegroundColor Green
   ```
 
+
+
 ## Run with
 
 ### Jupyter
-
 1. 下載 `ipykernel` 套件
     ```
     uv add ipykernel --group dev
     ```
-
 2. 使用 VSCode 的話，Select Kernel 選擇虛擬環境的 Python Interpreter
     ![](https://code.visualstudio.com/assets/docs/datascience/jupyter/native-kernel-picker.png)
-
 3. 使用 Browser IDE 的話
     ```
     uv run --with jupyter jupyter lab
     ```
 
-## Others
 
+
+## Others
 + Formatter 功能：[ruff](https://hackmd.io/@RogelioKG/ruff)
 + Precommit 功能：[pre-commit](https://hackmd.io/@RogelioKG/pre-commit)
-
