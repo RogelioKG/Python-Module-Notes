@@ -85,7 +85,7 @@
       image_size=(256, 256),
       batch_size=32
   )
-```
+  ```
 
 ### B. In-Model Preprocessing
 
