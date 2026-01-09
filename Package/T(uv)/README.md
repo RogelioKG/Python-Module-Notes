@@ -208,10 +208,6 @@
 |:---|
 |有 wheel 包的話，也可以直接安裝：`uv add ???.whl`|
 
-|🚨 <span class="caution">CAUTION</span>|
-|:---|
-|在某些 OS 中，點擊 wheel 檔是有可能直接安裝的<br>(<mark>傳給別人前請務必詳細說明，不要直接點擊！</mark>)|
-
 + #### `-r`
   > 使用 `requirements.txt` 安裝套件，並更新 `pyproject.toml` 和 `uv.lock`
   ```
