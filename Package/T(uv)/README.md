@@ -200,8 +200,11 @@
 
 ### `sync`：同步套件
 > <mark>安裝全部套件的加強版</mark>。\
-> 假如發生一些意外，導致你的 venv 缺了某些套件，\
-> 或者 lockfile 不小心掉入垃圾桶，都可以用這個同步重新長回來。
+> 根據 `pyproject.toml`：
+> 1. 自動建立 venv
+> 2. 自動建立 lockfile
+> 3. 自動安裝依賴套件
+> 4. 自動安裝專案 in editable mode (若專案將作為套件發布)
 
 ### `add` ：安裝套件
 |📗 <span class="tip">TIP</span>|
@@ -313,7 +316,7 @@
   ```
   |📗 <span class="tip">TIP</span>|
   |:---|
-  |超好用：因 monorepo 架構而在根目錄統一管理 `.env`，使用它可跨目錄將 `.env` 引入|
+  |超好用：可引入任意路徑的 `.env` |
 
 ### `tree`：依賴樹
 > 展示套件們的依賴關係
@@ -354,7 +357,7 @@
   ```
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
-  |當 `pyproject.toml` 和 `uv.lock` 不一致時，<br><mark>試圖同步</mark>，再導出 `uv.lock` 的 lockfile 資訊。|
+  |當 `pyproject.toml` 和 `uv.lock` 不一致時，<br><mark>試圖同步</mark> (以 `pyproject.toml` 為準)，<br>再導出 `uv.lock` 的 lockfile 資訊。|
 + #### `--format`
   > 輸出格式
 + #### `--no-hashes`
@@ -370,9 +373,9 @@
   > 僅導出特定 group 內的依賴套件
 
 ### `cache`：快取
-  |🚨 <span class="caution">CAUTION</span>|
-  |:---|
-  |uv 為避免重複下載，採取激進快取策略，若太久沒清會很胖，要定期清|
+|🚨 <span class="caution">CAUTION</span>|
+|:---|
+|uv 為避免重複下載，採取激進快取策略，若太久沒清會很胖，要定期清|
 + #### `dir`
   > 快取目錄 (通常是 `%LOCALAPPDATA%/uv/cache`)
   + 補充
@@ -397,7 +400,7 @@
   |「修剪」中[舊版快取](https://github.com/astral-sh/uv/issues/10153#issuecomment-2564360859)的意思是，<mark>uv 因實作調整，而遺留下來的舊版目錄結構</mark>。 |
   |比如在快取目錄中，有類似 `wheels-v5` 這樣的快取，它的上一版可能就是 `wheel-v4`，當 uv 版本更新時，這些舊版快取就會變成孤兒。 |
 
-  |🚨 <span class="caution">CAUTION</span>|
+  |🔮 <span class="important">IMPORTANT</span>|
   |:---|
   | 所以 `uv cache prune` 和 `pnpm store prune` 實作上並不一樣。|
   | pnpm 可以知道 hardlink 的 link count，然後去自動清理；uv 並沒有選擇這麼做。|
@@ -475,7 +478,13 @@
   + `dev`：1.2.3a4.dev6 => 1.2.3.dev7
 
 ### `pip`：相容 pip 介面
-> ...
+> 之所以保留這個介面，\
+> 是為了讓舊專案能 drop-in replacement (無痛遷移) 到 uv，\
+> 只要將 `pip` 一鍵替代為 `uv pip`，就能享受 Rust 的極致效能。
+
+|☢️ <span class="warn">WARNING</span>|
+|:---|
+|使用 `uv pip` 操作，並不會同步更新到 `pyproject.toml` 和 `uvlock.toml`。<br>這意味著，你無法享受到 uv 的所有 feature。<br>若是新專案，建議直接使用 uv 的原生指令。|
 
 ### `venv`：創建虛擬環境
 > 預設目錄名 `.venv`
@@ -528,9 +537,9 @@
 | **行為** | 依 index 優先序解析，選擇優先序高的解析成功 index (預設) | 對每個依賴套件，依 index 優先序尋找版本，前一個 index 都沒合適版本，才換下一個 index | 對每個依賴套件，無視優先序從所有 index 找，若有多個則取優先序高的 index |
 | **說明** | ✅ 依賴套件皆來自同 index | ☢️ 依賴套件可來自不同 index  | ☢️ 依賴套件可來自不同 index |
 
-| ☢️ <span class="warn">WARNING</span>|
-| :------------------------------------- |
-| <mark>混用套件源</mark>之所以被定調為 <mark>unsafe</mark>：<br>1. 通常不是 developer 在開發階段預期的情況，可能會出現不兼容的情況<br>2. 同名冒充套件的供應鏈攻擊 |
+|☢️ <span class="warn">WARNING</span>|
+|:---|
+|<mark>混用套件源</mark>之所以被定調為 <mark>unsafe</mark>：<br>1. 通常並非 developer 在開發階段預期的情況，可能出現不兼容<br>2. 同名冒充套件的供應鏈攻擊|
 
 
 
