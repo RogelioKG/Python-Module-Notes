@@ -6,13 +6,14 @@
 
 ## References
 + 📑 [**Documentation - uv**](https://docs.astral.sh/uv/)
-+ 🔗 [**使用 uv 管理 Python 環境**](https://dev.to/codemee/shi-yong-uv-guan-li-python-huan-jing-53hg)
++ 🔗 [**The Will Will Web - uv 與 uvx 命令全攻略：Python 開發者的極速工具指南**](https://blog.miniasp.com/post/2025/10/20/uv-uvx-cheatsheet)
++ 🔗 [**黑暗執行緒 - 一次搞定 Python 版本管理/套件安裝/虛擬環境的極速神器 uv**](https://blog.darkthread.net/blog/uv/)
 + 🎬 [**ArjanCodes - UV for Python… (Almost) All Batteries Included**](https://youtu.be/qh98qOND6MI)
 
 
 
 ## Installation
-+ Windows
++ Windows (推薦 [scoop](https://hackmd.io/@RogelioKG/scoop))
   ```bash
   scoop install uv 
   ```
@@ -50,8 +51,8 @@
 ## Note
 |📘 <span class="note">NOTE</span> : uv|
 |:---|
-|uv 仍在開發中！<br><span style="color: grey;">註：此筆記紀錄的是 `0.9.21` (2025/12/30) 的功能！</span>|
-| uv 安裝第三方套件的方式：使用 hardlink (詳見：[cache](#cache：快取))|
+|筆者自 2024/12 入坑 uv，持續記錄 uv 的點點滴滴...<br><span style="color: grey;">上次更新時間：2025/12/30 (版本：0.9.21)</span>|
+| uv 安裝套件方式：使用 hardlink (詳見：[cache](#cache：快取))|
 |uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
 |uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
 
@@ -61,13 +62,26 @@
 | 類型 | 套件共用策略 | 套件多版本共存 | 範例 |
 | --- | --- | --- | --- |
 | **Tree** | 不共用 | ✅ 允許 | `npm v2` |
-| **Partial Graph** | 儘量共用，衝突時允許多版本 | ✅ 允許 | `npm v3+` / `pnpm` (peer dependency 衝突) |
-| **Full Graph** | 所有套件，共用唯一版本 | ❌ 不允許 | `uv` / `pip` / `pnpm` |
+| **Partial Graph** | 儘量共用，衝突時允許多版本 | ✅ 允許 | `npm v3+` / `pnpm` (peer dependency) |
+| **Full Graph** | 所有套件，共用唯一版本 | ❌ 不允許 | `uv` / `pip` |
 
-> Full Graph 版本求解，本質上是一個 SAT 問題，\
-> 通常採用 SAT solver 來嘗試找解。\
-> uv 使用的是一種特別的 solver：[PubGrub](https://github.com/pubgrub-rs/pubgrub)。
+> Full Graph 版本求解，本質上是一個 SAT 問題，通常採用 SAT solver 來嘗試找解。\
+> uv 使用的是 [PubGrub](https://github.com/pubgrub-rs/pubgrub)，<mark>當問題無解時，能夠詳細釐清具體的衝突點</mark>，\
+> 而不像傳統 pip resolver 啪一坨錯誤往你臉上呼巴掌。
 
+
+
+## Binary
+
+### uv
+> uv。
+
+### uvx
+> [uv tool](#tool：工具) run 的別名。
+
+### uvw
+> 背景運作模式。執行時不會跳出 console (Windows)。\
+> 在 [Task Scheduler](https://ithelp.ithome.com.tw/articles/10276390) 等自動排程情境特別好用。
 
 
 ## Commands
@@ -397,7 +411,7 @@
 > 工具是一種 CLI 執行檔。\
 > 會被安裝在獨立環境 (非專案內)，以避免受不相關的依賴套件影響。
 + #### `run`
-  > 暫時下載工具 (可簡寫 `uvx`)
+  > 暫時下載工具 (簡寫 [uvx](#uvx))
   ```
   uv tool run ruff check
   ```
@@ -798,9 +812,3 @@ explicit = true
     ```
     uv run --with jupyter jupyter lab
     ```
-
-
-
-## Others
-+ Formatter 功能：[ruff](https://hackmd.io/@RogelioKG/ruff)
-+ Precommit 功能：[pre-commit](https://hackmd.io/@RogelioKG/pre-commit)
