@@ -9,12 +9,12 @@
 
 ## Controversy
 ### pros
-+ Python 原生環境的支持
-  + 型別、屬性提示
++ Python 原生環境支持
+  + type hinting
   + column 由屬性控制，若想改名可藉由 IDE 批量更改名稱
-+ 生產力的提升
++ 生產力提升
 + 更安全
-  + 若使用 SQL，必須時時刻刻明白自己在做甚麼，且絕不犯錯
+  + 若使用 SQL，必須時刻明白自己在做什麼，絕不犯錯
 ### cons
 + 性能開銷
   + 在執行期引入抽象層
@@ -22,68 +22,63 @@
   + 違反 Zen of Python：[*There should be one obvious way to do it.*](https://zen-of-python.info/there-should-be-one-and-preferably-only-one-obvious-way-to-do-it.html#13)
 + 文檔混亂
   + 筆者只推薦看 [References](#References) 列出的那兩篇文檔📄 (重點部分) 
-### well...
-+ 替代品 (待觀察 👀) 
+### substitute
   + [peewee](https://github.com/coleifer/peewee)
-  + [sqlmodel](https://github.com/coleifer/peewee) (fastapi 自家)
+  + [sqlmodel](https://github.com/coleifer/peewee) (fastapi 自家，sqlalchemy 套殼)
 
 
 ## Nouns
 
 ### DB-API
-[DB-API 2.0 (PEP 249) ](https://peps.python.org/pep-0249/)
-
-Python 中存取資料庫的標準介面。\
-經典方法 `close()` / `commit()` / `rollback()` / `cursor()` 的行為規範就是從這裡來的。
++ 說明
+  + [DB-API 2.0 (PEP 249)](https://peps.python.org/pep-0249/)
+  + Python 中存取資料庫的標準介面
+  + 經典方法 `close()` / `commit()` / `rollback()` / `cursor()` 的行為規範就是從這裡來的
 
 ### ORM
-[物件關係對映 (Object Relational Mapping)](https://www.explainthis.io/zh-hant/swe/orm-intro)
++ 說明
+  + [物件關係對映 (Object Relational Mapping)](https://www.explainthis.io/zh-hant/swe/orm-intro)
+  + 可通過操作類別與實例，來對資料庫進行 CRUD 等操作，而不必直接去操作 SQL 語句
++ 映射關係
+  1. 將<span style="color: cornflowerblue">表格 (table)</span> 映射為<span style="color: firebrick">類別 (class)</span>
+  2. 將<span style="color: cornflowerblue">欄位 (column)</span> 映射為<span style="color: firebrick">屬性 (attribute)</span>
+  3. 將<span style="color: cornflowerblue">記錄 (record)</span> 映射為<span style="color: firebrick">實例 (instance)</span>
++ ORM 物件
+  ```py
+  # ORM 類別 (ORM class)
+  class Employee(Base):
+      __tablename__ = "employee"
 
-即開發者可通過操作類別與實例，來對資料庫進行 CRUD 等操作，\
-而不必直接去操作 SQL 語句。
-
-1. 將<span style="color: cornflowerblue">表格 (table)</span> 映射為<span style="color: firebrick">類別 (class)</span>
-2. 將<span style="color: cornflowerblue">欄位 (column)</span> 映射為<span style="color: firebrick">屬性 (attribute)</span>
-3. 將<span style="color: cornflowerblue">記錄 (record)</span> 映射為<span style="color: firebrick">實例 (instance)</span>
-
-
-### ORM object
-```py
-# ORM 類別 (ORM class)
-class Employee(Base):
-    __tablename__ = "employee"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    emp_name: Mapped[str] = mapped_column(String(20), index=True)
-    birth_date: Mapped[date] = mapped_column(Date)
-    sex: Mapped[str] = mapped_column(String(1))
-    salary: Mapped[int] = mapped_column(Integer, CheckConstraint("salary >= 0"))
-    branch_id: Mapped[int] = mapped_column(ForeignKey("branch.id"), nullable=False)
-```
-```py
-# ORM 實例 (ORM object)
-Employee(
-    emp_name="RogelioKG",
-    birth_date=datetime(2002, 8, 13),
-    sex="M",
-    salary=0,
-    branch_id=1,
-),
-```
+      id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+      emp_name: Mapped[str] = mapped_column(String(20), index=True)
+      birth_date: Mapped[date] = mapped_column(Date)
+      sex: Mapped[str] = mapped_column(String(1))
+      salary: Mapped[int] = mapped_column(Integer, CheckConstraint("salary >= 0"))
+      branch_id: Mapped[int] = mapped_column(ForeignKey("branch.id"), nullable=False)
+  ```
+  ```py
+  # ORM 實例 (ORM object)
+  Employee(
+      emp_name="RogelioKG",
+      birth_date=datetime(2002, 8, 13),
+      sex="M",
+      salary=0,
+      branch_id=1,
+  ),
+  ```
 
 ### Transaction
-+ <mark>資料庫執行過程中的一個「邏輯單位」</mark>
-+ 可以想像成<mark>一筆交易，其中所有操作應具有原子性</mark>
-  + 所有操作要嘛全執行 ([commit](#commit))、要嘛因中途失誤而全倒帶 ([rollback](#rollback))，不能只做一半
-  + 就比如訂單系統：使用者錢包扣款 -> 訂單新增
++ 事務：具有<mark>原子性</mark> (不可分割)
+  + 所有事務內的 SQL 操作要嘛全執行 ([commit](#commit))、要嘛中途失誤而全倒帶 ([rollback](#rollback))，不能只做一半
++ 範例：訂單系統
+  + 使用者錢包扣款 -> 訂單新增
     + 結果扣款了但訂單新增失誤，等同沒下單
     + 此時就要一併倒帶使用者錢包扣款的動作才行
 
-## Session
-
-### what is session?
-+ session 物件負責管理 <mark>ORM 實例與資料庫的交流</mark>
-+ 快取 <mark>identity map</mark>
+### Session
++ 會話：與資料庫的一次連線過程
+  + 若用 pgbouncer + transaction pooling，連線生命週期僅為 transaction，我們暫不討論這部分
++ 快取：<mark>identity map</mark>
   + session 內部維護一個資料結構，你可以理解成快取
   + identity map 是一個 <mark>weakref value 字典</mark>
     + key: `(ORM class, primary_key)`
@@ -99,6 +94,8 @@ Employee(
     assert u1 is u2
     ```
     ![](https://martinfowler.com/eaaCatalog/index/idMapperSketch.gif)
+
+## Session
 
 ### `add()` / `add_all()`
 + <mark>這是 session 的變更</mark>
@@ -170,21 +167,10 @@ Employee(
       with session.begin(): 
           session.add(some_object)
           session.add(some_other_object)
-      # 🟧 此處結束一個 transaction
-  # 🟧 此處結束一個 connection
-  ```
-+ 這裡多補充一些關係，可看清它們背後管理的邏輯
-  ```py
-  # Note：Session(engine) 回傳 session
-  # 其 __enter__() 回傳自身 (session)
-  with Session(engine) as session:
-      # Note：session.begin() 回傳 SessionTransaction(session)
-      # 其 __enter__() 回傳自身 (session_transaction)
-      with session.begin():
-          session.add(some_object)
-          session.add(some_other_object)
-      # session.commit() or session.rollback()
-  # session.close()
+      # 🟧 此處結束一個 transaction，自動 session.commit() or session.rollback()
+      session.add(another_object)
+      session.commit()
+  # 🟧 此處結束一個 connection，自動 session.close()
   ```
 
 ### `begin_nested()`
