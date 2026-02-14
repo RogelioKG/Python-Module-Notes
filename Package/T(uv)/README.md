@@ -51,7 +51,7 @@
 ## Note
 |📘 <span class="note">NOTE</span> : uv|
 |:---|
-|筆者自 2024/12 入坑 uv，持續記錄 uv 的點點滴滴...<br><span style="color: grey;">上次更新時間：2025/12/30 (版本：0.9.21)</span>|
+|筆者自 2024/12 入坑 uv，持續記錄 uv 的點點滴滴...<br><span style="color: grey;">上次更新時間：2026/02/05 (版本：0.10.0)</span>|
 | uv 安裝套件方式：使用 hardlink (詳見：[cache](#cache：快取))|
 |uv 的 <mark>[build backend](https://hackmd.io/@RogelioKG/setuptools)：`uv-build`</mark> (打包成可發布套件的工具)|
 |uv 的 <mark>lockfile：`uv.lock`</mark> (紀錄每個套件的版本與它們的依賴關係) <br><span style="color: grey;">註：PEP 751 (2024/7/26) 終於正式要求了 Python 的標準 lockfile 為 `pylock.toml`。</span>|
@@ -353,7 +353,7 @@
 
 + #### ` `
   ```
-  uv export --no-hashes --format requirements-txt > requirements.txt
+  uv export --no-hashes --format requirements.txt > requirements.txt
   ```
   |🚨 <span class="caution">CAUTION</span>|
   |:---|
@@ -593,8 +593,8 @@ default-groups = ["lint"]
 > uv 擴充。
 ```toml
 [[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 
 [[tool.uv.index]]
 name = "pypi"
@@ -613,15 +613,20 @@ publish-url = "https://test.pypi.org/legacy/"
 > `explicit = true`
 > + 代表僅此套件的 wheel 檔從【指定套件源】抓取
 > + 其餘依賴套件的 wheel 檔從【預設套件源】抓取
+
+|📗 <span class="tip">TIP</span>|
+|:---|
+|GPU 版的 Pytorch 已經包含 CUDA 核心函式庫，它不依賴於你電腦上的 CUDA|
+
 ```toml
 [tool.uv.sources]
 torch = [
-  { index = "pytorch-cu124"},
+  { index = "pytorch-cu130"},
 ]
 
 [[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 ```
 
